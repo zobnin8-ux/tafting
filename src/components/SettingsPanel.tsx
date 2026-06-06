@@ -27,6 +27,8 @@ export function SettingsPanel() {
   const setShowGrid = useTuftingStore((s) => s.setShowGrid);
   const gridSize = useTuftingStore((s) => s.gridSize);
   const setGridSize = useTuftingStore((s) => s.setGridSize);
+  const colorMapLabelMode = useTuftingStore((s) => s.colorMapLabelMode);
+  const setColorMapLabelMode = useTuftingStore((s) => s.setColorMapLabelMode);
   const commitReprocess = useTuftingStore((s) => s.commitReprocess);
   const hasImage = useTuftingStore((s) => s.images !== null);
   const { t } = useTranslation();
@@ -219,6 +221,32 @@ export function SettingsPanel() {
           />
           {t("settings.enableGrid")}
         </label>
+        <div className="space-y-1.5">
+          <span className="text-xs text-stone-500">
+            {t("settings.colorMapLabels")}
+          </span>
+          <div className="flex gap-2">
+            {(
+              [
+                { value: "numbers" as const, labelKey: "settings.colorMapNumbers" },
+                { value: "names" as const, labelKey: "settings.colorMapNames" },
+              ] as const
+            ).map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setColorMapLabelMode(opt.value)}
+                disabled={!hasImage}
+                className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                  colorMapLabelMode === opt.value
+                    ? "bg-amber-600 text-white"
+                    : "bg-stone-100 text-stone-600 hover:bg-stone-200 disabled:opacity-40"
+                }`}
+              >
+                {t(opt.labelKey)}
+              </button>
+            ))}
+          </div>
+        </div>
         {showGrid && (
           <div className="flex gap-2">
             {gridOptions.map((size) => (

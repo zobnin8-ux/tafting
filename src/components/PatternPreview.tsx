@@ -20,6 +20,8 @@ export function PatternPreview() {
     { value: "original", labelKey: "preview.original" },
     { value: "reduced", labelKey: "preview.simplified" },
     { value: "contour", labelKey: "preview.contour" },
+    { value: "colorMap", labelKey: "preview.colorMap" },
+    { value: "mirroredColorMap", labelKey: "preview.mirroredColorMap" },
     { value: "mirrored", labelKey: "preview.mirrored" },
   ];
 
@@ -48,12 +50,12 @@ export function PatternPreview() {
       </div>
 
       {canRender && (
-        <div className="mb-3 flex shrink-0 gap-1 rounded-lg bg-stone-100 p-1">
+        <div className="mb-3 flex shrink-0 flex-wrap gap-1 rounded-lg bg-stone-100 p-1">
           {MODES.map((mode) => (
             <button
               key={mode.value}
               onClick={() => setPreviewMode(mode.value)}
-              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+              className={`min-w-0 flex-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium transition-colors sm:px-2 sm:text-xs ${
                 previewMode === mode.value
                   ? "bg-white text-stone-900 shadow-sm"
                   : "text-stone-500 hover:text-stone-700"

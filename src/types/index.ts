@@ -3,7 +3,15 @@ export type TuftingType = "cut" | "loop";
 export type PileHeight = "low" | "medium" | "high";
 export type ComplexityRating = "easy" | "medium" | "hard" | "expert";
 export type GridSize = "1in" | "2in" | "5cm" | "10cm";
-export type PreviewMode = "original" | "reduced" | "contour" | "mirrored";
+export type PreviewMode =
+  | "original"
+  | "reduced"
+  | "contour"
+  | "colorMap"
+  | "mirroredColorMap"
+  | "mirrored";
+
+export type ColorMapLabelMode = "numbers" | "names";
 
 export interface RugSettings {
   width: number;
@@ -66,8 +74,10 @@ export interface ProcessedImages {
   originalDataUrl: string;
   reducedDataUrl: string;
   contourDataUrl: string;
+  colorMapDataUrl: string;
   mirroredDataUrl: string;
   mirroredContourDataUrl: string;
+  mirroredColorMapDataUrl: string;
   width: number;
   height: number;
 }

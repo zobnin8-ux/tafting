@@ -21,6 +21,9 @@ export function PreviewCanvas({ mode }: PreviewCanvasProps) {
   const showGrid = useTuftingStore((s) => s.showGrid);
   const gridSize = useTuftingStore((s) => s.gridSize);
   const showMirrored = useTuftingStore((s) => s.showMirrored);
+  const noiseThreshold = useTuftingStore((s) => s.noiseThreshold);
+  const colorMapLabelMode = useTuftingStore((s) => s.colorMapLabelMode);
+  const palette = useTuftingStore((s) => s.palette);
 
   const fitCanvasToContainer = () => {
     const canvas = canvasRef.current;
@@ -56,6 +59,9 @@ export function PreviewCanvas({ mode }: PreviewCanvasProps) {
           showGrid,
           gridSize,
           showMirrored,
+          noiseThreshold,
+          colorMapLabelMode,
+          colorNames: palette.map((c) => c.name),
         });
 
         if (cancelled || !canvasRef.current) return;
@@ -78,6 +84,9 @@ export function PreviewCanvas({ mode }: PreviewCanvasProps) {
             showGrid,
             gridSize,
             showMirrored: false,
+            noiseThreshold,
+            colorMapLabelMode,
+            colorNames: palette.map((c) => c.name),
           });
           if (!cancelled && canvasRef.current) {
             drawToDisplayCanvas(canvasRef.current, fallback);
@@ -112,6 +121,9 @@ export function PreviewCanvas({ mode }: PreviewCanvasProps) {
     showGrid,
     gridSize,
     showMirrored,
+    noiseThreshold,
+    colorMapLabelMode,
+    palette,
   ]);
 
   return (

@@ -27,6 +27,12 @@ export function resolvePreviewUrl(
   const mirrored = isValidDataUrl(images.mirroredDataUrl)
     ? images.mirroredDataUrl
     : null;
+  const colorMap = isValidDataUrl(images.colorMapDataUrl)
+    ? images.colorMapDataUrl
+    : null;
+  const mirroredColorMap = isValidDataUrl(images.mirroredColorMapDataUrl)
+    ? images.mirroredColorMapDataUrl
+    : null;
 
   switch (mode) {
     case "original":
@@ -36,6 +42,10 @@ export function resolvePreviewUrl(
     case "contour":
       if (showMirrored) return mirroredContour ?? contour ?? reduced;
       return contour ?? mirroredContour ?? reduced;
+    case "colorMap":
+      return colorMap ?? contour;
+    case "mirroredColorMap":
+      return mirroredColorMap ?? colorMap ?? contour;
     case "mirrored":
       return mirrored ?? reduced;
     default:

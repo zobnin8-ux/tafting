@@ -87,15 +87,20 @@ export function PalettePanel() {
       )}
 
       <div className="max-h-64 space-y-2 overflow-y-auto">
-        {palette.map((color) => (
+        {palette.map((color, index) => (
           <div
             key={color.id}
             className="flex items-start gap-3 rounded-lg border border-stone-200 p-3"
           >
-            <div
-              className="mt-0.5 h-10 w-10 shrink-0 rounded-md border border-stone-300"
-              style={{ backgroundColor: color.hex }}
-            />
+            <div className="relative mt-0.5 shrink-0">
+              <div
+                className="h-10 w-10 rounded-md border border-stone-300"
+                style={{ backgroundColor: color.hex }}
+              />
+              <span className="absolute -left-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-stone-800 text-[10px] font-bold text-white">
+                {index + 1}
+              </span>
+            </div>
             <div className="min-w-0 flex-1">
               <input
                 type="text"

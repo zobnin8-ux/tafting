@@ -4,20 +4,63 @@ import { useState } from "react";
 import { useTuftingStore } from "@/store/useTuftingStore";
 import { useLocaleStore } from "@/store/useLocaleStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { buildColorMapDataUrls } from "@/lib/colorMapExport";
 import { exportPng, exportPdf } from "@/services/ExportService";
 
 export function ExportManager() {
   const images = useTuftingStore((s) => s.images);
+  const labels = useTuftingStore((s) => s.labels);
   const palette = useTuftingStore((s) => s.palette);
   const materials = useTuftingStore((s) => s.materials);
+  const noiseThreshold = useTuftingStore((s) => s.noiseThreshold);
+  const colorMapLabelMode = useTuftingStore((s) => s.colorMapLabelMode);
+  const showGrid = useTuftingStore((s) => s.showGrid);
+  const gridSize = useTuftingStore((s) => s.gridSize);
+  const rugSettings = useTuftingStore((s) => s.rugSettings);
   const locale = useLocaleStore((s) => s.locale);
   const { t } = useTranslation();
   const [exporting, setExporting] = useState(false);
 
   const hasData = images && palette.length > 0 && materials;
 
-  const handlePngExport = async (type: "reduced" | "contour" | "mirrored") => {
+  const getColorMapUrls = () => {
+    if (!labels || !images) return null;
+    return buildColorMapDataUrls({
+      labels,
+      width: images.width,
+      height: images.height,
+      noiseThreshold,
+      colorMapLabelMode,
+      colorNames: palette.map((c) => c.name),
+      showGrid,
+      gridSize,
+      rugSettings,
+    });
+  };
+
+  const handlePngExport = async (
+    type:
+      | "reduced"
+      | "contour"
+      | "colorMap"
+      | "mirroredColorMap"
+      | "mirrored"
+  ) => {
     if (!images) return;
+
+    if (type === "colorMap" || type === "mirroredColorMap") {
+      const colorMaps = getColorMapUrls();
+      if (!colorMaps) return;
+      const url =
+        type === "colorMap" ? colorMaps.colorMap : colorMaps.mirroredColorMap;
+      const name =
+        type === "colorMap"
+          ? "tufting-color-map.png"
+          : "tufting-mirrored-color-map.png";
+      await exportPng(url, name);
+      return;
+    }
+
     const urls = {
       reduced: images.reducedDataUrl,
       contour: images.contourDataUrl,
@@ -35,7 +78,18 @@ export function ExportManager() {
     if (!images || !materials) return;
     setExporting(true);
     try {
-      await exportPdf(images, palette, materials, locale);
+      const colorMaps = getColorMapUrls();
+      await exportPdf(
+        {
+          ...images,
+          colorMapDataUrl: colorMaps?.colorMap ?? images.colorMapDataUrl,
+          mirroredColorMapDataUrl:
+            colorMaps?.mirroredColorMap ?? images.mirroredColorMapDataUrl,
+        },
+        palette,
+        materials,
+        locale
+      );
     } finally {
       setExporting(false);
     }
@@ -54,6 +108,11 @@ export function ExportManager() {
             [
               { type: "reduced" as const, labelKey: "export.simplifiedPattern" },
               { type: "contour" as const, labelKey: "export.contourPattern" },
+              { type: "colorMap" as const, labelKey: "export.colorMapPattern" },
+              {
+                type: "mirroredColorMap" as const,
+                labelKey: "export.mirroredColorMapPattern",
+              },
               { type: "mirrored" as const, labelKey: "export.mirroredPattern" },
             ] as const
           ).map((item) => (

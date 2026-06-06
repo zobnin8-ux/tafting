@@ -30,6 +30,7 @@ import type {
   ColorMergeSuggestion,
   ComplexityAnalysis,
   PreviewMode,
+  ColorMapLabelMode,
   GridSize,
   ProgressKey,
   ErrorKey,
@@ -48,6 +49,7 @@ interface TuftingState {
   showMirrored: boolean;
   showGrid: boolean;
   gridSize: GridSize;
+  colorMapLabelMode: ColorMapLabelMode;
   previewMode: PreviewMode;
   colorNames: Map<string, string>;
   dismissedMerges: Set<string>;
@@ -73,6 +75,7 @@ interface TuftingState {
   setShowMirrored: (show: boolean) => void;
   setShowGrid: (show: boolean) => void;
   setGridSize: (size: GridSize) => void;
+  setColorMapLabelMode: (mode: ColorMapLabelMode) => void;
   setPreviewMode: (mode: PreviewMode) => void;
   setColorName: (hex: string, name: string) => void;
   uploadImage: (file: File) => Promise<void>;
@@ -97,6 +100,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   showMirrored: false,
   showGrid: false,
   gridSize: "1in",
+  colorMapLabelMode: "numbers",
   previewMode: "reduced",
   colorNames: new Map(),
   dismissedMerges: new Set(),
@@ -154,6 +158,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     set({ gridSize: size });
     get().recalculate();
   },
+
+  setColorMapLabelMode: (mode) => set({ colorMapLabelMode: mode }),
 
   setPreviewMode: (mode) => set({ previewMode: mode }),
 
@@ -270,7 +276,17 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   },
 
   recalculate: () => {
-    const { labels, centroids, images, rugSettings, wasteFactorPercent, colorNames, showGrid, gridSize } = get();
+    const {
+      labels,
+      centroids,
+      images,
+      rugSettings,
+      wasteFactorPercent,
+      colorNames,
+      showGrid,
+      gridSize,
+      noiseThreshold,
+    } = get();
     if (!labels || !centroids || !images) return;
 
     const locale = useLocaleStore.getState().locale;
@@ -284,7 +300,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       colorNames,
       showGrid,
       gridSize,
-      (i) => getDefaultColorName(locale, i)
+      (i) => getDefaultColorName(locale, i),
+      noiseThreshold
     );
 
     const original =

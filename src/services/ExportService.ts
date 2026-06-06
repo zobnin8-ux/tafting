@@ -52,6 +52,11 @@ export async function exportPdf(
     { title: translate(locale, "pdf.originalImage"), dataUrl: images.originalDataUrl },
     { title: translate(locale, "pdf.simplifiedPattern"), dataUrl: images.reducedDataUrl },
     { title: translate(locale, "pdf.contourPattern"), dataUrl: images.contourDataUrl },
+    { title: translate(locale, "pdf.colorMapPattern"), dataUrl: images.colorMapDataUrl },
+    {
+      title: translate(locale, "pdf.mirroredColorMapPattern"),
+      dataUrl: images.mirroredColorMapDataUrl,
+    },
     { title: translate(locale, "pdf.mirroredPattern"), dataUrl: images.mirroredDataUrl },
   ];
 
@@ -71,12 +76,13 @@ export async function exportPdf(
   pdf.text(translate(locale, "pdf.colorPalette"), margin, 12);
   let yPos = 25;
   pdf.setFontSize(10);
-  for (const color of palette) {
+  for (let i = 0; i < palette.length; i++) {
+    const color = palette[i];
     pdf.setFillColor(color.rgb.r, color.rgb.g, color.rgb.b);
     pdf.rect(margin, yPos - 4, 8, 8, "F");
     pdf.setTextColor(0, 0, 0);
     pdf.text(
-      `${color.name} | ${color.hex} | RGB(${color.rgb.r},${color.rgb.g},${color.rgb.b}) | ${color.percentage.toFixed(1)}% | ${color.areaSqM.toFixed(3)} m² | ${color.yarnWeightG}g (${color.skeins} ${getSkeinLabel(locale, color.skeins, "pdf")})`,
+      `${i + 1}. ${color.name} | ${color.hex} | RGB(${color.rgb.r},${color.rgb.g},${color.rgb.b}) | ${color.percentage.toFixed(1)}% | ${color.areaSqM.toFixed(3)} m² | ${color.yarnWeightG}g (${color.skeins} ${getSkeinLabel(locale, color.skeins, "pdf")})`,
       margin + 12,
       yPos
     );

@@ -6,8 +6,14 @@ import {
   mirrorCanvas,
 } from "@/lib/canvas";
 import { generateContours } from "@/services/ContourService";
+import { generateColorMap } from "@/services/ColorMapService";
 import type { Rgb } from "@/lib/color";
-import type { GridSize, PreviewMode, RugSettings } from "@/types";
+import type {
+  ColorMapLabelMode,
+  GridSize,
+  PreviewMode,
+  RugSettings,
+} from "@/types";
 
 export function labelsToCanvas(
   labels: Int32Array,
@@ -91,6 +97,9 @@ export interface RenderPreviewParams {
   showGrid: boolean;
   gridSize: GridSize;
   showMirrored: boolean;
+  noiseThreshold: number;
+  colorMapLabelMode: ColorMapLabelMode;
+  colorNames: string[];
 }
 
 export async function renderPreviewCanvas(
@@ -109,6 +118,9 @@ export async function renderPreviewCanvas(
     showGrid,
     gridSize,
     showMirrored,
+    noiseThreshold,
+    colorMapLabelMode,
+    colorNames,
   } = params;
 
   if (mode === "original") {
@@ -130,6 +142,20 @@ export async function renderPreviewCanvas(
   if (mode === "contour") {
     const { canvas: contour } = generateContours(labels, width, height);
     const source = showMirrored ? mirrorCanvas(contour) : contour;
+    return applyGridIfNeeded(source, showGrid, rugSettings, gridSize);
+  }
+
+  if (mode === "colorMap" || mode === "mirroredColorMap") {
+    const colorMap = generateColorMap(
+      labels,
+      width,
+      height,
+      noiseThreshold,
+      colorMapLabelMode,
+      colorNames
+    );
+    const source =
+      mode === "mirroredColorMap" ? mirrorCanvas(colorMap) : colorMap;
     return applyGridIfNeeded(source, showGrid, rugSettings, gridSize);
   }
 

@@ -7,6 +7,7 @@ import {
 } from "@/lib/canvas";
 import { reduceColors } from "./ColorReductionService";
 import { generateContours } from "./ContourService";
+import { generateColorMap } from "./ColorMapService";
 import {
   buildPalette,
   buildMaterialList,
@@ -40,58 +41,70 @@ export async function regenerateOriginalPreview(file: File): Promise<string> {
   return canvasToDataUrl(canvas);
 }
 
+function applyGridToAll(
+  canvases: {
+    reduced: HTMLCanvasElement;
+    contour: HTMLCanvasElement;
+    colorMap: HTMLCanvasElement;
+    mirrored: HTMLCanvasElement;
+    mirroredContour: HTMLCanvasElement;
+    mirroredColorMap: HTMLCanvasElement;
+  },
+  rugSettings: RugSettings,
+  gridSize: string
+) {
+  const overlay = (canvas: HTMLCanvasElement) =>
+    drawGridOverlay(
+      canvas,
+      rugSettings.width,
+      rugSettings.height,
+      rugSettings.unit,
+      gridSize
+    );
+
+  return {
+    reduced: overlay(canvases.reduced),
+    contour: overlay(canvases.contour),
+    colorMap: overlay(canvases.colorMap),
+    mirrored: overlay(canvases.mirrored),
+    mirroredContour: overlay(canvases.mirroredContour),
+    mirroredColorMap: overlay(canvases.mirroredColorMap),
+  };
+}
+
 function buildDisplayImages(
   originalCanvas: HTMLCanvasElement,
   reduction: { canvas: HTMLCanvasElement; width: number; height: number },
   contourCanvas: HTMLCanvasElement,
+  colorMapCanvas: HTMLCanvasElement,
   mirroredReduced: HTMLCanvasElement,
   mirroredContour: HTMLCanvasElement,
+  mirroredColorMap: HTMLCanvasElement,
   rugSettings: RugSettings,
   showGrid: boolean,
   gridSize: string
 ): ProcessedImages {
-  let displayReduced = reduction.canvas;
-  let displayContour = contourCanvas;
-  let displayMirrored = mirroredReduced;
-  let displayMirroredContour = mirroredContour;
+  let display = {
+    reduced: reduction.canvas,
+    contour: contourCanvas,
+    colorMap: colorMapCanvas,
+    mirrored: mirroredReduced,
+    mirroredContour,
+    mirroredColorMap,
+  };
 
   if (showGrid) {
-    displayReduced = drawGridOverlay(
-      reduction.canvas,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
-    displayContour = drawGridOverlay(
-      contourCanvas,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
-    displayMirrored = drawGridOverlay(
-      mirroredReduced,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
-    displayMirroredContour = drawGridOverlay(
-      mirroredContour,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
+    display = applyGridToAll(display, rugSettings, gridSize);
   }
 
   return {
     originalDataUrl: canvasToDataUrl(originalCanvas),
-    reducedDataUrl: canvasToDataUrl(displayReduced),
-    contourDataUrl: canvasToDataUrl(displayContour),
-    mirroredDataUrl: canvasToDataUrl(displayMirrored),
-    mirroredContourDataUrl: canvasToDataUrl(displayMirroredContour),
+    reducedDataUrl: canvasToDataUrl(display.reduced),
+    contourDataUrl: canvasToDataUrl(display.contour),
+    colorMapDataUrl: canvasToDataUrl(display.colorMap),
+    mirroredDataUrl: canvasToDataUrl(display.mirrored),
+    mirroredContourDataUrl: canvasToDataUrl(display.mirroredContour),
+    mirroredColorMapDataUrl: canvasToDataUrl(display.mirroredColorMap),
     width: reduction.width,
     height: reduction.height,
   };
@@ -117,16 +130,25 @@ export async function processImage(
     reduction.width,
     reduction.height
   );
+  const colorMapCanvas = generateColorMap(
+    reduction.labels,
+    reduction.width,
+    reduction.height,
+    noiseThreshold
+  );
 
   const mirroredReduced = mirrorCanvas(reduction.canvas);
   const mirroredContour = mirrorCanvas(contourCanvas);
+  const mirroredColorMap = mirrorCanvas(colorMapCanvas);
 
   const images = buildDisplayImages(
     originalCanvas,
     reduction,
     contourCanvas,
+    colorMapCanvas,
     mirroredReduced,
     mirroredContour,
+    mirroredColorMap,
     rugSettings,
     showGrid,
     gridSize
@@ -174,7 +196,8 @@ export function reprocessFromLabels(
   colorNames: Map<string, string>,
   showGrid: boolean,
   gridSize: string,
-  defaultColorName: (index: number) => string
+  defaultColorName: (index: number) => string,
+  noiseThreshold = 50
 ): {
   images: Omit<ProcessedImages, "originalDataUrl">;
   palette: PaletteColor[];
@@ -188,43 +211,27 @@ export function reprocessFromLabels(
     width,
     height
   );
+  const colorMapCanvas = generateColorMap(
+    labels,
+    width,
+    height,
+    noiseThreshold
+  );
   const mirroredReduced = mirrorCanvas(reducedCanvas);
   const mirroredContour = mirrorCanvas(contourCanvas);
+  const mirroredColorMap = mirrorCanvas(colorMapCanvas);
 
-  let displayReduced = reducedCanvas;
-  let displayContour = contourCanvas;
-  let displayMirrored = mirroredReduced;
-  let displayMirroredContour = mirroredContour;
+  let display = {
+    reduced: reducedCanvas,
+    contour: contourCanvas,
+    colorMap: colorMapCanvas,
+    mirrored: mirroredReduced,
+    mirroredContour,
+    mirroredColorMap,
+  };
 
   if (showGrid) {
-    displayReduced = drawGridOverlay(
-      reducedCanvas,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
-    displayContour = drawGridOverlay(
-      contourCanvas,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
-    displayMirrored = drawGridOverlay(
-      mirroredReduced,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
-    displayMirroredContour = drawGridOverlay(
-      mirroredContour,
-      rugSettings.width,
-      rugSettings.height,
-      rugSettings.unit,
-      gridSize
-    );
+    display = applyGridToAll(display, rugSettings, gridSize);
   }
 
   const palette = buildPalette(
@@ -240,10 +247,12 @@ export function reprocessFromLabels(
 
   return {
     images: {
-      reducedDataUrl: canvasToDataUrl(displayReduced),
-      contourDataUrl: canvasToDataUrl(displayContour),
-      mirroredDataUrl: canvasToDataUrl(displayMirrored),
-      mirroredContourDataUrl: canvasToDataUrl(displayMirroredContour),
+      reducedDataUrl: canvasToDataUrl(display.reduced),
+      contourDataUrl: canvasToDataUrl(display.contour),
+      colorMapDataUrl: canvasToDataUrl(display.colorMap),
+      mirroredDataUrl: canvasToDataUrl(display.mirrored),
+      mirroredContourDataUrl: canvasToDataUrl(display.mirroredContour),
+      mirroredColorMapDataUrl: canvasToDataUrl(display.mirroredColorMap),
       width,
       height,
     },
