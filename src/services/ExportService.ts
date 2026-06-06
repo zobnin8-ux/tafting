@@ -51,6 +51,10 @@ export async function exportPdf(
 
   const pages: Array<{ title: string; dataUrl: string }> = [
     { title: translate(locale, "pdf.originalImage"), dataUrl: images.originalDataUrl },
+    {
+      title: translate(locale, "pdf.preparedArtwork"),
+      dataUrl: images.preparedDataUrl,
+    },
     { title: translate(locale, "pdf.simplifiedPattern"), dataUrl: images.reducedDataUrl },
     { title: translate(locale, "pdf.contourPattern"), dataUrl: images.contourDataUrl },
     { title: translate(locale, "pdf.colorMapPattern"), dataUrl: images.colorMapDataUrl },

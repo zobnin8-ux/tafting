@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import {
   COLOR_COUNT_DEFAULT,
+  DEFAULT_ARTWORK_PREP,
   DEFAULT_RUG_SETTINGS,
   NOISE_THRESHOLD_DEFAULT,
   WASTE_FACTOR_DEFAULT,
@@ -36,6 +37,8 @@ import type {
   ProgressKey,
   ErrorKey,
   MergeUndoSnapshot,
+  ArtworkPrepSettings,
+  PrepWarning,
 } from "@/types";
 import type { Rgb } from "@/lib/color";
 
@@ -57,6 +60,10 @@ interface TuftingState {
   colorNames: Map<string, string>;
   dismissedMerges: Set<string>;
   mergeUndoStack: MergeUndoSnapshot[];
+  artworkPrepSettings: ArtworkPrepSettings;
+  prepUndoStack: ArtworkPrepSettings[];
+  lastCommittedPrep: ArtworkPrepSettings;
+  prepWarnings: PrepWarning[];
 
   images: ProcessedImages | null;
   labels: Int32Array | null;
@@ -81,6 +88,9 @@ interface TuftingState {
   setColorMapLabelMode: (mode: ColorMapLabelMode) => void;
   setMatchDmc: (match: boolean) => void;
   setMatchTuftTheWorld: (match: boolean) => void;
+  patchArtworkPrepSettings: (settings: Partial<ArtworkPrepSettings>) => void;
+  commitArtworkPrepChange: () => void;
+  undoPrepSettings: () => void;
   setPreviewMode: (mode: PreviewMode) => void;
   setColorName: (hex: string, name: string) => void;
   uploadImage: (file: File) => Promise<void>;
@@ -123,6 +133,10 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   colorNames: new Map(),
   dismissedMerges: new Set(),
   mergeUndoStack: [],
+  artworkPrepSettings: { ...DEFAULT_ARTWORK_PREP },
+  prepUndoStack: [],
+  lastCommittedPrep: { ...DEFAULT_ARTWORK_PREP },
+  prepWarnings: [],
 
   images: null,
   labels: null,
@@ -197,6 +211,45 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     });
   },
 
+  patchArtworkPrepSettings: (partial) => {
+    set({
+      artworkPrepSettings: { ...get().artworkPrepSettings, ...partial },
+    });
+  },
+
+  commitArtworkPrepChange: () => {
+    const current = get().artworkPrepSettings;
+    const last = get().lastCommittedPrep;
+    const unchanged =
+      last.removeBackground === current.removeBackground &&
+      last.backgroundTolerance === current.backgroundTolerance &&
+      last.simplification === current.simplification &&
+      last.smallRegionPercent === current.smallRegionPercent &&
+      last.minLineWidth === current.minLineWidth &&
+      last.thickenThinLines === current.thickenThinLines;
+    if (unchanged) return;
+
+    set({
+      prepUndoStack: [...get().prepUndoStack, last].slice(-12),
+      lastCommittedPrep: { ...current },
+    });
+    if (!get().originalFile || !get().images) return;
+    scheduleReprocess(() => get().reprocess());
+  },
+
+  undoPrepSettings: () => {
+    const stack = get().prepUndoStack;
+    if (stack.length === 0) return;
+    const previous = stack[stack.length - 1];
+    set({
+      artworkPrepSettings: { ...previous },
+      lastCommittedPrep: { ...previous },
+      prepUndoStack: stack.slice(0, -1),
+    });
+    if (!get().originalFile || !get().images) return;
+    scheduleReprocess(() => get().reprocess());
+  },
+
   setPreviewMode: (mode) => set({ previewMode: mode }),
 
   setColorName: (hex, name) => {
@@ -235,7 +288,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         get().colorNames,
         get().showGrid,
         get().gridSize,
-        (i) => getDefaultColorName(locale, i)
+        (i) => getDefaultColorName(locale, i),
+        get().artworkPrepSettings
       );
       set({
         originalPreviewUrl: result.images.originalDataUrl,
@@ -250,8 +304,11 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         materials: result.materials,
         mergeSuggestions: result.mergeSuggestions,
         complexity: result.complexity,
-        previewMode: "reduced",
+        prepWarnings: result.prepWarnings,
+        previewMode: "cleaned",
         mergeUndoStack: [],
+        prepUndoStack: [],
+        lastCommittedPrep: { ...get().artworkPrepSettings },
         isProcessing: false,
         progress: null,
       });
@@ -282,7 +339,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         state.colorNames,
         state.showGrid,
         state.gridSize,
-        (i) => getDefaultColorName(locale, i)
+        (i) => getDefaultColorName(locale, i),
+        state.artworkPrepSettings
       );
 
       if (!isLatestReprocess(generation)) return;
@@ -300,6 +358,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         materials: result.materials,
         mergeSuggestions: result.mergeSuggestions,
         complexity: result.complexity,
+        prepWarnings: result.prepWarnings,
         mergeUndoStack: [],
         isProcessing: false,
         progress: null,
@@ -359,6 +418,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       images: {
         ...result.images,
         originalDataUrl: original,
+        preparedDataUrl: images.preparedDataUrl,
       },
       palette: withYarnMatches(
         result.palette,

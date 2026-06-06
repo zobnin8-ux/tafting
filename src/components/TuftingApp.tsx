@@ -1,6 +1,7 @@
 "use client";
 
 import { ImageUploader } from "./ImageUploader";
+import { PreparationPanel } from "./PreparationPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { PatternPreview } from "./PatternPreview";
 import { PalettePanel } from "./PalettePanel";
@@ -37,6 +38,8 @@ export function TuftingApp() {
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 items-start gap-4 p-4 lg:p-6">
         <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 xl:w-80">
           <ImageUploader />
+          <hr className="border-stone-200" />
+          <PreparationPanel />
           <hr className="border-stone-200" />
           <SettingsPanel />
           <hr className="border-stone-200" />

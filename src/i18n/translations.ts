@@ -17,6 +17,33 @@ export const translations = {
       formats: "JPG, PNG, WEBP",
       invalidFormat: "Загрузите изображение в формате JPG, PNG или WEBP.",
     },
+    prep: {
+      title: "Подготовка арта",
+      subtitle:
+        "Упрощение изображения под тафтинг до уменьшения цветов и генерации узора.",
+      undo: "Отменить",
+      removeBackground: "Удалить фон",
+      backgroundTolerance: "Чувствительность фона",
+      simplification: "Упрощение деталей",
+      simplificationLow: "Слабое",
+      simplificationMedium: "Среднее",
+      simplificationStrong: "Сильное",
+      smallRegionPercent: "Мин. размер области",
+      thickenThinLines: "Утолщать тонкие линии",
+      minLineWidth: "Мин. ширина линии",
+      warningsTitle: "Предупреждения для тафтинга",
+      warning: {
+        tooManySmallDetails: "Слишком много мелких деталей — увеличьте упрощение.",
+        tooManyColors: "Много цветов — уменьшите количество или усильте упрощение.",
+        thinLines: "Обнаружены тонкие линии — включите утолщение или упростите арт.",
+        gradientsDetected:
+          "Есть градиенты и тени — для тафтинга лучше плоские цветовые блоки.",
+        textDetected: "Похоже на текст — мелкие буквы сложно вытянуть.",
+        lowResolution: "Низкое разрешение — загрузите изображение побольше.",
+        increaseSimplification:
+          "Рекомендуется более сильное упрощение для этого изображения.",
+      },
+    },
     settings: {
       rugDimensions: "Размеры ковра",
       width: "Ширина",
@@ -55,6 +82,7 @@ export const translations = {
       title: "Предпросмотр узора",
       empty: "Загрузите изображение, чтобы увидеть узор",
       original: "Оригинал",
+      cleaned: "Подготовленный",
       simplified: "Упрощённый",
       contour: "Контур",
       colorMap: "Карта цветов",
@@ -120,6 +148,7 @@ export const translations = {
     },
     pdf: {
       originalImage: "Оригинальное изображение",
+      preparedArtwork: "Подготовленный арт",
       simplifiedPattern: "Упрощённый узор",
       contourPattern: "Контурный узор",
       colorMapPattern: "Карта цветов",
@@ -153,6 +182,36 @@ export const translations = {
       dragDrop: "Drag & drop or click to upload",
       formats: "JPG, PNG, WEBP",
       invalidFormat: "Please upload a JPG, PNG, or WEBP image.",
+    },
+    prep: {
+      title: "Artwork Preparation",
+      subtitle:
+        "Simplify the artwork for tufting before color reduction and pattern generation.",
+      undo: "Undo",
+      removeBackground: "Remove background",
+      backgroundTolerance: "Background tolerance",
+      simplification: "Detail simplification",
+      simplificationLow: "Low",
+      simplificationMedium: "Medium",
+      simplificationStrong: "Strong",
+      smallRegionPercent: "Min. region size",
+      thickenThinLines: "Thicken thin lines",
+      minLineWidth: "Min. line width",
+      warningsTitle: "Tufting warnings",
+      warning: {
+        tooManySmallDetails:
+          "Too many small details — increase simplification strength.",
+        tooManyColors:
+          "Many colors detected — reduce color count or simplify more.",
+        thinLines:
+          "Thin lines detected — enable thickening or simplify the artwork.",
+        gradientsDetected:
+          "Gradients or shadows detected — flat color blocks work better for tufting.",
+        textDetected: "Text-like details detected — small letters are hard to tuft.",
+        lowResolution: "Low resolution — upload a larger image if possible.",
+        increaseSimplification:
+          "Stronger simplification is recommended for this image.",
+      },
     },
     settings: {
       rugDimensions: "Rug Dimensions",
@@ -192,6 +251,7 @@ export const translations = {
       title: "Pattern Preview",
       empty: "Upload an image to see your pattern",
       original: "Original",
+      cleaned: "Cleaned",
       simplified: "Simplified",
       contour: "Contour",
       colorMap: "Color Map",
@@ -257,6 +317,7 @@ export const translations = {
     },
     pdf: {
       originalImage: "Original Image",
+      preparedArtwork: "Prepared Artwork",
       simplifiedPattern: "Simplified Pattern",
       contourPattern: "Contour Pattern",
       colorMapPattern: "Color Map",

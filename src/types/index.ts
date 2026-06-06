@@ -5,11 +5,37 @@ export type ComplexityRating = "easy" | "medium" | "hard" | "expert";
 export type GridSize = "1in" | "2in" | "5cm" | "10cm";
 export type PreviewMode =
   | "original"
+  | "cleaned"
   | "reduced"
   | "contour"
   | "colorMap"
   | "mirroredColorMap"
   | "mirrored";
+
+export type SimplificationLevel = "low" | "medium" | "strong";
+
+export type PrepWarningKey =
+  | "tooManySmallDetails"
+  | "tooManyColors"
+  | "thinLines"
+  | "gradientsDetected"
+  | "textDetected"
+  | "lowResolution"
+  | "increaseSimplification";
+
+export interface PrepWarning {
+  key: PrepWarningKey;
+  severity: "info" | "warning" | "error";
+}
+
+export interface ArtworkPrepSettings {
+  removeBackground: boolean;
+  backgroundTolerance: number;
+  simplification: SimplificationLevel;
+  smallRegionPercent: number;
+  minLineWidth: number;
+  thickenThinLines: boolean;
+}
 
 export type ColorMapLabelMode = "numbers" | "names";
 export type YarnCatalogId = "dmc" | "tuft-the-world";
@@ -83,6 +109,7 @@ export interface MaterialList {
 
 export interface ProcessedImages {
   originalDataUrl: string;
+  preparedDataUrl: string;
   reducedDataUrl: string;
   contourDataUrl: string;
   colorMapDataUrl: string;

@@ -5,6 +5,18 @@ export const COLOR_COUNT_MAX = 32;
 export const COLOR_COUNT_DEFAULT = 12;
 
 export const NOISE_THRESHOLD_DEFAULT = 50;
+export const SMALL_REGION_PERCENT_DEFAULT = 0.5;
+export const BACKGROUND_TOLERANCE_DEFAULT = 40;
+export const MIN_LINE_WIDTH_DEFAULT = 2;
+
+export const DEFAULT_ARTWORK_PREP = {
+  removeBackground: false,
+  backgroundTolerance: BACKGROUND_TOLERANCE_DEFAULT,
+  simplification: "medium" as const,
+  smallRegionPercent: SMALL_REGION_PERCENT_DEFAULT,
+  minLineWidth: MIN_LINE_WIDTH_DEFAULT,
+  thickenThinLines: true,
+};
 export const WASTE_FACTOR_DEFAULT = 15;
 export const BACKING_MARGIN_PERCENT = 10;
 export const GLUE_ML_PER_SQM = 250;

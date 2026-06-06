@@ -93,6 +93,7 @@ export interface RenderPreviewParams {
   originalFile: File | null;
   originalPreviewUrl: string | null;
   originalDataUrl: string | null;
+  preparedDataUrl: string | null;
   rugSettings: RugSettings;
   showGrid: boolean;
   gridSize: GridSize;
@@ -114,6 +115,7 @@ export async function renderPreviewCanvas(
     originalFile,
     originalPreviewUrl,
     originalDataUrl,
+    preparedDataUrl,
     rugSettings,
     showGrid,
     gridSize,
@@ -124,6 +126,22 @@ export async function renderPreviewCanvas(
   } = params;
 
   if (mode === "original") {
+    return renderOriginal(
+      width,
+      height,
+      originalFile,
+      originalPreviewUrl,
+      originalDataUrl
+    );
+  }
+
+  if (mode === "cleaned") {
+    if (preparedDataUrl) {
+      const img = await loadImageFromDataUrl(preparedDataUrl);
+      const { canvas, ctx } = createCanvas(width, height);
+      ctx.drawImage(img, 0, 0, width, height);
+      return applyGridIfNeeded(canvas, showGrid, rugSettings, gridSize);
+    }
     return renderOriginal(
       width,
       height,

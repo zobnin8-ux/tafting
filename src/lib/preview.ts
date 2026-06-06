@@ -10,6 +10,9 @@ export function resolvePreviewUrl(
   originalPreviewUrl: string | null,
   showMirrored: boolean
 ): string | null {
+  const prepared = isValidDataUrl(images.preparedDataUrl)
+    ? images.preparedDataUrl
+    : null;
   const original = isValidDataUrl(originalPreviewUrl)
     ? originalPreviewUrl
     : isValidDataUrl(images.originalDataUrl)
@@ -37,6 +40,8 @@ export function resolvePreviewUrl(
   switch (mode) {
     case "original":
       return original ?? reduced;
+    case "cleaned":
+      return prepared ?? reduced ?? original;
     case "reduced":
       return reduced ?? original;
     case "contour":

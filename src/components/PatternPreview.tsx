@@ -3,6 +3,7 @@
 import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { PreviewCanvas } from "./PreviewCanvas";
+import { PrepWarnings } from "./PrepWarnings";
 import type { PreviewMode } from "@/types";
 import type { ComplexityRating } from "@/types";
 
@@ -18,6 +19,7 @@ export function PatternPreview() {
 
   const MODES: { value: PreviewMode; labelKey: string }[] = [
     { value: "original", labelKey: "preview.original" },
+    { value: "cleaned", labelKey: "preview.cleaned" },
     { value: "reduced", labelKey: "preview.simplified" },
     { value: "contour", labelKey: "preview.contour" },
     { value: "colorMap", labelKey: "preview.colorMap" },
@@ -84,6 +86,27 @@ export function PatternPreview() {
           </div>
         )}
 
+        {canRender && previewMode === "cleaned" && (
+          <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
+            <div className="flex min-h-0 flex-col overflow-hidden">
+              <span className="mb-1 shrink-0 text-center text-xs text-stone-400">
+                {t("preview.original")}
+              </span>
+              <div className="relative min-h-0 flex-1">
+                <PreviewCanvas mode="original" />
+              </div>
+            </div>
+            <div className="flex min-h-0 flex-col overflow-hidden">
+              <span className="mb-1 shrink-0 text-center text-xs text-stone-400">
+                {t("preview.cleaned")}
+              </span>
+              <div className="relative min-h-0 flex-1">
+                <PreviewCanvas mode="cleaned" />
+              </div>
+            </div>
+          </div>
+        )}
+
         {canRender && previewMode === "reduced" && (
           <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
             <div className="flex min-h-0 flex-col overflow-hidden">
@@ -105,12 +128,16 @@ export function PatternPreview() {
           </div>
         )}
 
-        {canRender && previewMode !== "reduced" && (
+        {canRender &&
+          previewMode !== "reduced" &&
+          previewMode !== "cleaned" && (
           <div className="absolute inset-0 p-2">
             <PreviewCanvas mode={previewMode} />
           </div>
         )}
       </div>
+
+      <PrepWarnings />
 
       {complexity && canRender && (
         <div className="mt-3 grid shrink-0 grid-cols-3 gap-2 text-center text-xs text-stone-500">

@@ -5,6 +5,7 @@ import {
   mirrorCanvas,
   drawGridOverlay,
 } from "@/lib/canvas";
+import { prepareArtwork } from "./ArtworkPreparationService";
 import { reduceColors } from "./ColorReductionService";
 import { generateContours } from "./ContourService";
 import { generateColorMap } from "./ColorMapService";
@@ -21,6 +22,8 @@ import type {
   RugSettings,
   ColorMergeSuggestion,
   ComplexityAnalysis,
+  ArtworkPrepSettings,
+  PrepWarning,
 } from "@/types";
 import type { Rgb } from "@/lib/color";
 import { labelsToCanvas } from "@/lib/renderPreview";
@@ -33,6 +36,7 @@ export interface ProcessingResult {
   materials: MaterialList;
   mergeSuggestions: ColorMergeSuggestion[];
   complexity: ComplexityAnalysis;
+  prepWarnings: PrepWarning[];
 }
 
 export async function regenerateOriginalPreview(file: File): Promise<string> {
@@ -74,6 +78,7 @@ function applyGridToAll(
 
 function buildDisplayImages(
   originalCanvas: HTMLCanvasElement,
+  preparedCanvas: HTMLCanvasElement,
   reduction: { canvas: HTMLCanvasElement; width: number; height: number },
   contourCanvas: HTMLCanvasElement,
   colorMapCanvas: HTMLCanvasElement,
@@ -99,6 +104,7 @@ function buildDisplayImages(
 
   return {
     originalDataUrl: canvasToDataUrl(originalCanvas),
+    preparedDataUrl: canvasToDataUrl(preparedCanvas),
     reducedDataUrl: canvasToDataUrl(display.reduced),
     contourDataUrl: canvasToDataUrl(display.contour),
     colorMapDataUrl: canvasToDataUrl(display.colorMap),
@@ -119,12 +125,19 @@ export async function processImage(
   colorNames: Map<string, string>,
   showGrid: boolean,
   gridSize: string,
-  defaultColorName: (index: number) => string
+  defaultColorName: (index: number) => string,
+  artworkPrepSettings: ArtworkPrepSettings
 ): Promise<ProcessingResult> {
   const img = await loadImageFromFile(file);
   const { canvas: originalCanvas } = imageToCanvas(img);
 
-  const reduction = reduceColors(originalCanvas, colorCount, noiseThreshold);
+  const { canvas: preparedCanvas, warnings: prepWarnings } = prepareArtwork(
+    originalCanvas,
+    artworkPrepSettings,
+    colorCount
+  );
+
+  const reduction = reduceColors(preparedCanvas, colorCount, noiseThreshold);
   const { canvas: contourCanvas, edgeCount } = generateContours(
     reduction.labels,
     reduction.width,
@@ -151,6 +164,7 @@ export async function processImage(
 
   const images = buildDisplayImages(
     originalCanvas,
+    preparedCanvas,
     reduction,
     contourCanvas,
     colorMapCanvas,
@@ -191,6 +205,7 @@ export async function processImage(
     materials,
     mergeSuggestions,
     complexity,
+    prepWarnings,
   };
 }
 
@@ -207,7 +222,7 @@ export function reprocessFromLabels(
   defaultColorName: (index: number) => string,
   noiseThreshold = 50
 ): {
-  images: Omit<ProcessedImages, "originalDataUrl">;
+  images: Omit<ProcessedImages, "originalDataUrl" | "preparedDataUrl">;
   palette: PaletteColor[];
   materials: MaterialList;
   mergeSuggestions: ColorMergeSuggestion[];
