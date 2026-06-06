@@ -284,12 +284,13 @@ function countSmallRegions(
 function estimateThinLineRatio(
   data: Uint8ClampedArray,
   width: number,
-  height: number
+  height: number,
+  step = 3
 ): number {
   let thin = 0;
   let edge = 0;
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
+  for (let y = 1; y < height - 1; y += step) {
+    for (let x = 1; x < width - 1; x += step) {
       const idx = y * width + x;
       const c = getPixel(data, idx);
       const neighbors = [
@@ -391,20 +392,28 @@ function buildWarnings(
     Math.round((settings.smallRegionPercent / 100) * totalPixels)
   );
 
-  const sampled = samplePixels(originalData, width, height, 2);
-  const quickCentroids = kMeansCluster(sampled, Math.min(32, sampled.length));
-  const quickLabels = assignLabels(
-    originalData,
-    width,
-    height,
-    quickCentroids
-  );
-  const smallRegions = countSmallRegions(
-    quickLabels,
-    width,
-    height,
-    regionThreshold
-  );
+  let smallRegions = 0;
+  const sampled = samplePixels(originalData, width, height, 4);
+  if (sampled.length > 0) {
+    const quickCentroids = kMeansCluster(
+      sampled,
+      Math.min(24, sampled.length)
+    );
+    if (quickCentroids.length > 0) {
+      const quickLabels = assignLabels(
+        originalData,
+        width,
+        height,
+        quickCentroids
+      );
+      smallRegions = countSmallRegions(
+        quickLabels,
+        width,
+        height,
+        regionThreshold
+      );
+    }
+  }
   const uniqueColors = countUniqueColors(originalData, width, height);
   const thinRatio = estimateThinLineRatio(originalData, width, height);
   const gradientScore = estimateGradientScore(originalData, width, height);
@@ -467,10 +476,25 @@ export function prepareArtwork(
   data = medianFilter(data, width, height, prepBlurRadius(settings.simplification));
 
   const sampled = samplePixels(data, width, height);
-  const centroids = kMeansCluster(
+  if (sampled.length === 0) {
+    return {
+      canvas: sourceCanvas,
+      warnings,
+    };
+  }
+
+  const rawCentroids = kMeansCluster(
     sampled,
     Math.min(prepColorCount(settings.simplification), sampled.length)
-  ).map((c) => ({
+  );
+  if (rawCentroids.length === 0) {
+    return {
+      canvas: sourceCanvas,
+      warnings,
+    };
+  }
+
+  const centroids = rawCentroids.map((c) => ({
     r: Math.round(c.r),
     g: Math.round(c.g),
     b: Math.round(c.b),

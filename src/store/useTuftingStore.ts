@@ -23,6 +23,7 @@ import {
   isLatestReprocess,
   scheduleReprocess,
   flushScheduledReprocess,
+  cancelScheduledReprocess,
 } from "@/store/reprocessManager";
 import type {
   RugSettings,
@@ -270,8 +271,17 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   },
 
   uploadImage: async (file) => {
+    cancelScheduledReprocess();
     set({
       originalFile: file,
+      images: null,
+      labels: null,
+      centroids: null,
+      palette: [],
+      materials: null,
+      mergeSuggestions: [],
+      complexity: null,
+      prepWarnings: [],
       isProcessing: true,
       error: null,
       progress: "processing",
@@ -311,6 +321,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         lastCommittedPrep: { ...get().artworkPrepSettings },
         isProcessing: false,
         progress: null,
+        error: null,
       });
     } catch (err) {
       set({
@@ -323,7 +334,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
 
   reprocess: async () => {
     const state = get();
-    if (!state.originalFile || !state.images) return;
+    if (!state.originalFile || !state.images || state.isProcessing) return;
 
     const generation = beginReprocess();
     set({ isProcessing: true, error: null, progress: "reprocessing" });
@@ -362,6 +373,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         mergeUndoStack: [],
         isProcessing: false,
         progress: null,
+        error: null,
       });
     } catch {
       if (!isLatestReprocess(generation)) return;

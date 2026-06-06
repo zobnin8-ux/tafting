@@ -25,3 +25,10 @@ export function flushScheduledReprocess(callback: () => void): void {
   }
   callback();
 }
+
+export function cancelScheduledReprocess(): void {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+}
