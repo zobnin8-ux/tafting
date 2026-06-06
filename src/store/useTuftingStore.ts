@@ -7,9 +7,14 @@ import {
   NOISE_THRESHOLD_DEFAULT,
   WASTE_FACTOR_DEFAULT,
 } from "@/constants";
-import { processImage, reprocessFromLabels } from "@/services/ImageProcessingService";
+import {
+  processImage,
+  reprocessFromLabels,
+  regenerateOriginalPreview,
+} from "@/services/ImageProcessingService";
 import { mergeColors } from "@/services/ColorReductionService";
 import { getDefaultColorName } from "@/i18n";
+import { isValidDataUrl, resolvePreviewUrl } from "@/lib/preview";
 import { useLocaleStore } from "@/store/useLocaleStore";
 import {
   beginReprocess,
@@ -34,6 +39,7 @@ import type { Rgb } from "@/lib/color";
 
 interface TuftingState {
   originalFile: File | null;
+  originalPreviewUrl: string | null;
   colorCount: number;
   noiseThreshold: number;
   wasteFactorPercent: number;
@@ -77,10 +83,12 @@ interface TuftingState {
   getActivePreviewUrl: () => string | null;
   recalculate: () => void;
   commitReprocess: () => void;
+  repairPreviewUrls: () => Promise<void>;
 }
 
 export const useTuftingStore = create<TuftingState>((set, get) => ({
   originalFile: null,
+  originalPreviewUrl: null,
   colorCount: COLOR_COUNT_DEFAULT,
   noiseThreshold: NOISE_THRESHOLD_DEFAULT,
   wasteFactorPercent: WASTE_FACTOR_DEFAULT,
@@ -147,7 +155,10 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     get().recalculate();
   },
 
-  setPreviewMode: (mode) => set({ previewMode: mode }),
+  setPreviewMode: (mode) => {
+    set({ previewMode: mode });
+    void get().repairPreviewUrls();
+  },
 
   setColorName: (hex, name) => {
     const colorNames = new Map(get().colorNames);
@@ -188,6 +199,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         (i) => getDefaultColorName(locale, i)
       );
       set({
+        originalPreviewUrl: result.images.originalDataUrl,
         images: result.images,
         labels: result.labels,
         centroids: result.centroids,
@@ -233,6 +245,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       if (!isLatestReprocess(generation)) return;
 
       set({
+        originalPreviewUrl: result.images.originalDataUrl,
         images: result.images,
         labels: result.labels,
         centroids: result.centroids,
@@ -277,17 +290,59 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       (i) => getDefaultColorName(locale, i)
     );
 
+    const original =
+      get().originalPreviewUrl && isValidDataUrl(get().originalPreviewUrl)
+        ? get().originalPreviewUrl!
+        : isValidDataUrl(images.originalDataUrl)
+          ? images.originalDataUrl
+          : "";
+
     set({
       images: {
-        ...images,
         ...result.images,
-        originalDataUrl: images.originalDataUrl,
+        originalDataUrl: original,
       },
       palette: result.palette,
       materials: result.materials,
       mergeSuggestions: result.mergeSuggestions,
       complexity: result.complexity,
     });
+  },
+
+  repairPreviewUrls: async () => {
+    const { images, originalFile, originalPreviewUrl, previewMode, showMirrored } =
+      get();
+    if (!images) return;
+
+    const currentUrl = resolvePreviewUrl(
+      images,
+      previewMode,
+      originalPreviewUrl,
+      showMirrored
+    );
+    if (isValidDataUrl(currentUrl)) return;
+
+    const needsOriginal =
+      previewMode === "original" &&
+      !isValidDataUrl(originalPreviewUrl) &&
+      !isValidDataUrl(images.originalDataUrl);
+
+    if (needsOriginal && originalFile) {
+      try {
+        const url = await regenerateOriginalPreview(originalFile);
+        set({
+          originalPreviewUrl: url,
+          images: { ...images, originalDataUrl: url },
+        });
+        return;
+      } catch {
+        // fall through to full recalculate
+      }
+    }
+
+    if (get().labels && get().centroids) {
+      get().recalculate();
+    }
   },
 
   mergePaletteColors: async (colorAId, colorBId) => {
@@ -346,11 +401,13 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   },
 
   getActivePreviewUrl: () => {
-    const { images, previewMode, showContours, showMirrored } = get();
+    const { images, previewMode, showMirrored, originalPreviewUrl } = get();
     if (!images) return null;
-    if (showMirrored || previewMode === "mirrored") return images.mirroredDataUrl;
-    if (showContours || previewMode === "contour") return images.contourDataUrl;
-    if (previewMode === "original") return images.originalDataUrl;
-    return images.reducedDataUrl;
+    return resolvePreviewUrl(
+      images,
+      previewMode,
+      originalPreviewUrl,
+      showMirrored
+    );
   },
 }));

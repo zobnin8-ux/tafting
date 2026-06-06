@@ -33,30 +33,22 @@ export interface ProcessingResult {
   complexity: ComplexityAnalysis;
 }
 
-export async function processImage(
-  file: File,
-  colorCount: number,
-  noiseThreshold: number,
-  rugSettings: RugSettings,
-  wasteFactorPercent: number,
-  colorNames: Map<string, string>,
-  showGrid: boolean,
-  gridSize: string,
-  defaultColorName: (index: number) => string
-): Promise<ProcessingResult> {
+export async function regenerateOriginalPreview(file: File): Promise<string> {
   const img = await loadImageFromFile(file);
-  const { canvas: originalCanvas } = imageToCanvas(img);
+  const { canvas } = imageToCanvas(img);
+  return canvasToDataUrl(canvas);
+}
 
-  const reduction = reduceColors(originalCanvas, colorCount, noiseThreshold);
-  const { canvas: contourCanvas, edgeCount } = generateContours(
-    reduction.labels,
-    reduction.width,
-    reduction.height
-  );
-
-  const mirroredReduced = mirrorCanvas(reduction.canvas);
-  const mirroredContour = mirrorCanvas(contourCanvas);
-
+function buildDisplayImages(
+  originalCanvas: HTMLCanvasElement,
+  reduction: { canvas: HTMLCanvasElement; width: number; height: number },
+  contourCanvas: HTMLCanvasElement,
+  mirroredReduced: HTMLCanvasElement,
+  mirroredContour: HTMLCanvasElement,
+  rugSettings: RugSettings,
+  showGrid: boolean,
+  gridSize: string
+): ProcessedImages {
   let displayReduced = reduction.canvas;
   let displayContour = contourCanvas;
   let displayMirrored = mirroredReduced;
@@ -93,6 +85,52 @@ export async function processImage(
     );
   }
 
+  return {
+    originalDataUrl: canvasToDataUrl(originalCanvas),
+    reducedDataUrl: canvasToDataUrl(displayReduced),
+    contourDataUrl: canvasToDataUrl(displayContour),
+    mirroredDataUrl: canvasToDataUrl(displayMirrored),
+    mirroredContourDataUrl: canvasToDataUrl(displayMirroredContour),
+    width: reduction.width,
+    height: reduction.height,
+  };
+}
+
+export async function processImage(
+  file: File,
+  colorCount: number,
+  noiseThreshold: number,
+  rugSettings: RugSettings,
+  wasteFactorPercent: number,
+  colorNames: Map<string, string>,
+  showGrid: boolean,
+  gridSize: string,
+  defaultColorName: (index: number) => string
+): Promise<ProcessingResult> {
+  const img = await loadImageFromFile(file);
+  const { canvas: originalCanvas } = imageToCanvas(img);
+
+  const reduction = reduceColors(originalCanvas, colorCount, noiseThreshold);
+  const { canvas: contourCanvas, edgeCount } = generateContours(
+    reduction.labels,
+    reduction.width,
+    reduction.height
+  );
+
+  const mirroredReduced = mirrorCanvas(reduction.canvas);
+  const mirroredContour = mirrorCanvas(contourCanvas);
+
+  const images = buildDisplayImages(
+    originalCanvas,
+    reduction,
+    contourCanvas,
+    mirroredReduced,
+    mirroredContour,
+    rugSettings,
+    showGrid,
+    gridSize
+  );
+
   const palette = buildPalette(
     reduction.labels,
     reduction.centroids,
@@ -115,15 +153,7 @@ export async function processImage(
   );
 
   return {
-    images: {
-      originalDataUrl: canvasToDataUrl(originalCanvas),
-      reducedDataUrl: canvasToDataUrl(displayReduced),
-      contourDataUrl: canvasToDataUrl(displayContour),
-      mirroredDataUrl: canvasToDataUrl(displayMirrored),
-      mirroredContourDataUrl: canvasToDataUrl(displayMirroredContour),
-      width: reduction.width,
-      height: reduction.height,
-    },
+    images,
     labels: reduction.labels,
     centroids: reduction.centroids,
     palette,

@@ -1,19 +1,27 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { resolvePreviewUrl } from "@/lib/preview";
 import type { PreviewMode } from "@/types";
 import type { ComplexityRating } from "@/types";
 
 export function PatternPreview() {
   const images = useTuftingStore((s) => s.images);
+  const originalPreviewUrl = useTuftingStore((s) => s.originalPreviewUrl);
   const previewMode = useTuftingStore((s) => s.previewMode);
   const setPreviewMode = useTuftingStore((s) => s.setPreviewMode);
   const isProcessing = useTuftingStore((s) => s.isProcessing);
   const progress = useTuftingStore((s) => s.progress);
   const complexity = useTuftingStore((s) => s.complexity);
   const showMirrored = useTuftingStore((s) => s.showMirrored);
+  const repairPreviewUrls = useTuftingStore((s) => s.repairPreviewUrls);
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (images) void repairPreviewUrls();
+  }, [images, repairPreviewUrls]);
 
   const MODES: { value: PreviewMode; labelKey: string }[] = [
     { value: "original", labelKey: "preview.original" },
@@ -22,33 +30,16 @@ export function PatternPreview() {
     { value: "mirrored", labelKey: "preview.mirrored" },
   ];
 
-  const getUrl = (): string | null => {
-    if (!images) return null;
-    switch (previewMode) {
-      case "original":
-        return images.originalDataUrl;
-      case "contour":
-        return showMirrored
-          ? images.mirroredContourDataUrl
-          : images.contourDataUrl;
-      case "mirrored":
-        return images.mirroredDataUrl;
-      default:
-        return showMirrored ? images.mirroredDataUrl : images.reducedDataUrl;
-    }
-  };
+  const tabUrl = images
+    ? resolvePreviewUrl(images, previewMode, originalPreviewUrl, showMirrored)
+    : null;
 
-  const url = getUrl();
-
-  const fallbackUrl =
-    images?.originalDataUrl ||
-    images?.reducedDataUrl ||
-    images?.contourDataUrl ||
-    null;
-
-  const displayUrl =
-    url ||
-    (previewMode === "original" ? fallbackUrl : null);
+  const originalUrl = images
+    ? resolvePreviewUrl(images, "original", originalPreviewUrl, showMirrored)
+    : null;
+  const reducedUrl = images
+    ? resolvePreviewUrl(images, "reduced", originalPreviewUrl, showMirrored)
+    : null;
 
   const complexityColors: Record<ComplexityRating, string> = {
     easy: "bg-green-100 text-green-800",
@@ -106,29 +97,26 @@ export function PatternPreview() {
           </div>
         )}
 
-        {images && displayUrl && (
+        {images && tabUrl && (
           <div className="flex h-full w-full items-center justify-center p-4">
-            {previewMode === "reduced" &&
-            (images.originalDataUrl || images.reducedDataUrl) ? (
+            {previewMode === "reduced" && originalUrl && reducedUrl ? (
               <div className="flex h-full w-full gap-4">
-                {images.originalDataUrl && (
-                  <div className="flex flex-1 flex-col items-center">
-                    <span className="mb-1 text-xs text-stone-400">
-                      {t("preview.original")}
-                    </span>
-                    <img
-                      src={images.originalDataUrl}
-                      alt={t("preview.original")}
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                )}
+                <div className="flex flex-1 flex-col items-center">
+                  <span className="mb-1 text-xs text-stone-400">
+                    {t("preview.original")}
+                  </span>
+                  <img
+                    src={originalUrl}
+                    alt={t("preview.original")}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
                 <div className="flex flex-1 flex-col items-center">
                   <span className="mb-1 text-xs text-stone-400">
                     {t("preview.reduced")}
                   </span>
                   <img
-                    src={images.reducedDataUrl || displayUrl}
+                    src={reducedUrl}
                     alt={t("preview.reduced")}
                     className="max-h-full max-w-full object-contain"
                   />
@@ -136,8 +124,8 @@ export function PatternPreview() {
               </div>
             ) : (
               <img
-                src={displayUrl}
-                alt={t("preview.title")}
+                src={tabUrl}
+                alt={t(MODES.find((m) => m.value === previewMode)?.labelKey ?? "preview.title")}
                 className="max-h-full max-w-full object-contain"
               />
             )}
