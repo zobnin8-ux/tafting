@@ -1,0 +1,114 @@
+"use client";
+
+import { useTuftingStore } from "@/store/useTuftingStore";
+
+export function PalettePanel() {
+  const palette = useTuftingStore((s) => s.palette);
+  const setColorName = useTuftingStore((s) => s.setColorName);
+  const mergeSuggestions = useTuftingStore((s) => s.mergeSuggestions);
+  const dismissedMerges = useTuftingStore((s) => s.dismissedMerges);
+  const mergePaletteColors = useTuftingStore((s) => s.mergePaletteColors);
+  const dismissMergeSuggestion = useTuftingStore(
+    (s) => s.dismissMergeSuggestion
+  );
+
+  const activeSuggestions = mergeSuggestions.filter(
+    (s) =>
+      !dismissedMerges.has(`${s.colorAId}-${s.colorBId}`) &&
+      !dismissedMerges.has(`${s.colorBId}-${s.colorAId}`)
+  );
+
+  if (palette.length === 0) {
+    return (
+      <div className="text-center text-sm text-stone-400 py-8">
+        Palette will appear after uploading an image
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
+        Color Palette
+      </h3>
+
+      {activeSuggestions.length > 0 && (
+        <div className="space-y-2">
+          {activeSuggestions.map((s) => (
+            <div
+              key={`${s.colorAId}-${s.colorBId}`}
+              className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm"
+            >
+              <p className="text-stone-700">
+                <span
+                  className="inline-block h-3 w-3 rounded-sm border border-stone-300"
+                  style={{ backgroundColor: s.colorAHex }}
+                />{" "}
+                {s.colorAHex} and{" "}
+                <span
+                  className="inline-block h-3 w-3 rounded-sm border border-stone-300"
+                  style={{ backgroundColor: s.colorBHex }}
+                />{" "}
+                {s.colorBHex} are very similar. Merge?
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() =>
+                    mergePaletteColors(s.colorAId, s.colorBId)
+                  }
+                  className="rounded-md bg-amber-600 px-3 py-1 text-xs font-medium text-white hover:bg-amber-700"
+                >
+                  Merge
+                </button>
+                <button
+                  onClick={() =>
+                    dismissMergeSuggestion(s.colorAId, s.colorBId)
+                  }
+                  className="rounded-md bg-stone-200 px-3 py-1 text-xs font-medium text-stone-600 hover:bg-stone-300"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+        {palette.map((color) => (
+          <div
+            key={color.id}
+            className="flex items-start gap-3 rounded-lg border border-stone-200 p-3"
+          >
+            <div
+              className="mt-0.5 h-10 w-10 shrink-0 rounded-md border border-stone-300"
+              style={{ backgroundColor: color.hex }}
+            />
+            <div className="min-w-0 flex-1">
+              <input
+                type="text"
+                value={color.name}
+                onChange={(e) => setColorName(color.hex, e.target.value)}
+                className="w-full border-b border-transparent bg-transparent text-sm font-medium text-stone-800 hover:border-stone-300 focus:border-amber-500 focus:outline-none"
+              />
+              <div className="mt-1 space-y-0.5 text-xs text-stone-500">
+                <div>{color.hex}</div>
+                <div>
+                  RGB({color.rgb.r}, {color.rgb.g}, {color.rgb.b})
+                </div>
+                <div>{color.percentage.toFixed(1)}% of image</div>
+                <div>
+                  {color.areaSqM.toFixed(3)} m² / {color.areaSqFt.toFixed(2)} ft²
+                </div>
+                <div className="font-medium text-stone-700">
+                  {color.yarnWeightG}g — {color.skeins} skein
+                  {color.skeins !== 1 ? "s" : ""}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
