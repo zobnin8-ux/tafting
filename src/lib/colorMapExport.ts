@@ -1,4 +1,4 @@
-import { canvasToDataUrl, drawGridOverlay, mirrorCanvas } from "@/lib/canvas";
+import { canvasToDataUrl, drawGridOverlay } from "@/lib/canvas";
 import { generateColorMap } from "@/services/ColorMapService";
 import type { ColorMapLabelMode, GridSize, RugSettings } from "@/types";
 
@@ -45,19 +45,29 @@ export function buildColorMapDataUrls(
     rugSettings,
   } = params;
 
-  const base = generateColorMap(
+  const colorMapCanvas = generateColorMap(
     labels,
     width,
     height,
     noiseThreshold,
     colorMapLabelMode,
-    colorNames
+    colorNames,
+    false
+  );
+  const mirroredColorMapCanvas = generateColorMap(
+    labels,
+    width,
+    height,
+    noiseThreshold,
+    colorMapLabelMode,
+    colorNames,
+    true
   );
   const colorMap = canvasToDataUrl(
-    withGrid(base, showGrid, rugSettings, gridSize)
+    withGrid(colorMapCanvas, showGrid, rugSettings, gridSize)
   );
   const mirroredColorMap = canvasToDataUrl(
-    withGrid(mirrorCanvas(base), showGrid, rugSettings, gridSize)
+    withGrid(mirroredColorMapCanvas, showGrid, rugSettings, gridSize)
   );
 
   return { colorMap, mirroredColorMap };

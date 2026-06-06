@@ -1,6 +1,20 @@
 import { generateContours } from "@/services/ContourService";
 import type { ColorMapLabelMode } from "@/types";
 
+function mirrorLabels(
+  labels: Int32Array,
+  width: number,
+  height: number
+): Int32Array {
+  const mirrored = new Int32Array(labels.length);
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      mirrored[y * width + x] = labels[y * width + (width - 1 - x)];
+    }
+  }
+  return mirrored;
+}
+
 interface RegionPlacement {
   labelIndex: number;
   cx: number;
@@ -137,14 +151,16 @@ export function generateColorMap(
   height: number,
   minRegionSize = 50,
   labelMode: ColorMapLabelMode = "numbers",
-  colorNames: string[] = []
+  colorNames: string[] = [],
+  mirrored = false
 ): HTMLCanvasElement {
-  const { canvas: contour } = generateContours(labels, width, height);
+  const workingLabels = mirrored ? mirrorLabels(labels, width, height) : labels;
+  const { canvas: contour } = generateContours(workingLabels, width, height);
   const ctx = contour.getContext("2d");
   if (!ctx) return contour;
 
   const placements = findRegionPlacements(
-    labels,
+    workingLabels,
     width,
     height,
     minRegionSize

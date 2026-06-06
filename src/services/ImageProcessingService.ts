@@ -139,7 +139,15 @@ export async function processImage(
 
   const mirroredReduced = mirrorCanvas(reduction.canvas);
   const mirroredContour = mirrorCanvas(contourCanvas);
-  const mirroredColorMap = mirrorCanvas(colorMapCanvas);
+  const mirroredColorMap = generateColorMap(
+    reduction.labels,
+    reduction.width,
+    reduction.height,
+    noiseThreshold,
+    "numbers",
+    [],
+    true
+  );
 
   const images = buildDisplayImages(
     originalCanvas,
@@ -219,7 +227,15 @@ export function reprocessFromLabels(
   );
   const mirroredReduced = mirrorCanvas(reducedCanvas);
   const mirroredContour = mirrorCanvas(contourCanvas);
-  const mirroredColorMap = mirrorCanvas(colorMapCanvas);
+  const mirroredColorMap = generateColorMap(
+    labels,
+    width,
+    height,
+    noiseThreshold,
+    "numbers",
+    [],
+    true
+  );
 
   let display = {
     reduced: reducedCanvas,

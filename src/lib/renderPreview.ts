@@ -152,11 +152,10 @@ export async function renderPreviewCanvas(
       height,
       noiseThreshold,
       colorMapLabelMode,
-      colorNames
+      colorNames,
+      mode === "mirroredColorMap"
     );
-    const source =
-      mode === "mirroredColorMap" ? mirrorCanvas(colorMap) : colorMap;
-    return applyGridIfNeeded(source, showGrid, rugSettings, gridSize);
+    return applyGridIfNeeded(colorMap, showGrid, rugSettings, gridSize);
   }
 
   const mirrored = mirrorCanvas(reduced);
