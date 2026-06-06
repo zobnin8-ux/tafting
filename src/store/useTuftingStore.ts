@@ -155,10 +155,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     get().recalculate();
   },
 
-  setPreviewMode: (mode) => {
-    set({ previewMode: mode });
-    void get().repairPreviewUrls();
-  },
+  setPreviewMode: (mode) => set({ previewMode: mode }),
 
   setColorName: (hex, name) => {
     const colorNames = new Map(get().colorNames);

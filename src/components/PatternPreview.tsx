@@ -1,27 +1,20 @@
 "use client";
 
-import { useEffect } from "react";
 import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import { resolvePreviewUrl } from "@/lib/preview";
+import { PreviewCanvas } from "./PreviewCanvas";
 import type { PreviewMode } from "@/types";
 import type { ComplexityRating } from "@/types";
 
 export function PatternPreview() {
   const images = useTuftingStore((s) => s.images);
-  const originalPreviewUrl = useTuftingStore((s) => s.originalPreviewUrl);
+  const labels = useTuftingStore((s) => s.labels);
   const previewMode = useTuftingStore((s) => s.previewMode);
   const setPreviewMode = useTuftingStore((s) => s.setPreviewMode);
   const isProcessing = useTuftingStore((s) => s.isProcessing);
   const progress = useTuftingStore((s) => s.progress);
   const complexity = useTuftingStore((s) => s.complexity);
-  const showMirrored = useTuftingStore((s) => s.showMirrored);
-  const repairPreviewUrls = useTuftingStore((s) => s.repairPreviewUrls);
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (images) void repairPreviewUrls();
-  }, [images, repairPreviewUrls]);
 
   const MODES: { value: PreviewMode; labelKey: string }[] = [
     { value: "original", labelKey: "preview.original" },
@@ -30,23 +23,14 @@ export function PatternPreview() {
     { value: "mirrored", labelKey: "preview.mirrored" },
   ];
 
-  const tabUrl = images
-    ? resolvePreviewUrl(images, previewMode, originalPreviewUrl, showMirrored)
-    : null;
-
-  const originalUrl = images
-    ? resolvePreviewUrl(images, "original", originalPreviewUrl, showMirrored)
-    : null;
-  const reducedUrl = images
-    ? resolvePreviewUrl(images, "reduced", originalPreviewUrl, showMirrored)
-    : null;
-
   const complexityColors: Record<ComplexityRating, string> = {
     easy: "bg-green-100 text-green-800",
     medium: "bg-yellow-100 text-yellow-800",
     hard: "bg-orange-100 text-orange-800",
     expert: "bg-red-100 text-red-800",
   };
+
+  const canRender = images && labels;
 
   return (
     <div className="flex h-full flex-col">
@@ -63,7 +47,7 @@ export function PatternPreview() {
         )}
       </div>
 
-      {images && (
+      {canRender && (
         <div className="mb-3 flex gap-1 rounded-lg bg-stone-100 p-1">
           {MODES.map((mode) => (
             <button
@@ -81,7 +65,7 @@ export function PatternPreview() {
         </div>
       )}
 
-      <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+      <div className="relative flex min-h-[300px] flex-1 items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
         {isProcessing && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-600 border-t-transparent" />
@@ -91,49 +75,41 @@ export function PatternPreview() {
           </div>
         )}
 
-        {!images && !isProcessing && (
+        {!canRender && !isProcessing && (
           <div className="text-center text-stone-400">
             <p className="text-sm">{t("preview.empty")}</p>
           </div>
         )}
 
-        {images && tabUrl && (
+        {canRender && (
           <div className="flex h-full w-full items-center justify-center p-4">
-            {previewMode === "reduced" && originalUrl && reducedUrl ? (
+            {previewMode === "reduced" ? (
               <div className="flex h-full w-full gap-4">
-                <div className="flex flex-1 flex-col items-center">
-                  <span className="mb-1 text-xs text-stone-400">
+                <div className="flex min-h-0 flex-1 flex-col items-center">
+                  <span className="mb-1 shrink-0 text-xs text-stone-400">
                     {t("preview.original")}
                   </span>
-                  <img
-                    src={originalUrl}
-                    alt={t("preview.original")}
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="flex min-h-0 flex-1 items-center justify-center">
+                    <PreviewCanvas mode="original" />
+                  </div>
                 </div>
-                <div className="flex flex-1 flex-col items-center">
-                  <span className="mb-1 text-xs text-stone-400">
+                <div className="flex min-h-0 flex-1 flex-col items-center">
+                  <span className="mb-1 shrink-0 text-xs text-stone-400">
                     {t("preview.reduced")}
                   </span>
-                  <img
-                    src={reducedUrl}
-                    alt={t("preview.reduced")}
-                    className="max-h-full max-w-full object-contain"
-                  />
+                  <div className="flex min-h-0 flex-1 items-center justify-center">
+                    <PreviewCanvas mode="reduced" />
+                  </div>
                 </div>
               </div>
             ) : (
-              <img
-                src={tabUrl}
-                alt={t(MODES.find((m) => m.value === previewMode)?.labelKey ?? "preview.title")}
-                className="max-h-full max-w-full object-contain"
-              />
+              <PreviewCanvas mode={previewMode} />
             )}
           </div>
         )}
       </div>
 
-      {complexity && images && (
+      {complexity && canRender && (
         <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-stone-500">
           <div className="rounded-md bg-stone-50 p-2">
             <div className="font-medium text-stone-700">

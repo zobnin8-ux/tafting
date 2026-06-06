@@ -22,6 +22,7 @@ import type {
   ComplexityAnalysis,
 } from "@/types";
 import type { Rgb } from "@/lib/color";
+import { labelsToCanvas } from "@/lib/renderPreview";
 
 export interface ProcessingResult {
   images: ProcessedImages;
@@ -181,12 +182,7 @@ export function reprocessFromLabels(
   mergeSuggestions: ColorMergeSuggestion[];
   complexity: ComplexityAnalysis;
 } {
-  const { canvas: reducedCanvas } = reduceColorsFromLabels(
-    labels,
-    centroids,
-    width,
-    height
-  );
+  const reducedCanvas = labelsToCanvas(labels, centroids, width, height);
   const { canvas: contourCanvas, edgeCount } = generateContours(
     labels,
     width,
@@ -262,28 +258,4 @@ export function reprocessFromLabels(
       50
     ),
   };
-}
-
-function reduceColorsFromLabels(
-  labels: Int32Array,
-  centroids: Rgb[],
-  width: number,
-  height: number
-): { canvas: HTMLCanvasElement } {
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d")!;
-  const imageData = ctx.createImageData(width, height);
-
-  for (let i = 0; i < labels.length; i++) {
-    const c = centroids[labels[i]];
-    const offset = i * 4;
-    imageData.data[offset] = c.r;
-    imageData.data[offset + 1] = c.g;
-    imageData.data[offset + 2] = c.b;
-    imageData.data[offset + 3] = 255;
-  }
-  ctx.putImageData(imageData, 0, 0);
-  return { canvas };
 }
