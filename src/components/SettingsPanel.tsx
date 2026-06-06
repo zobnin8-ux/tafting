@@ -1,6 +1,7 @@
 "use client";
 
 import { useTuftingStore } from "@/store/useTuftingStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   COLOR_COUNT_MIN,
   COLOR_COUNT_MAX,
@@ -27,6 +28,7 @@ export function SettingsPanel() {
   const gridSize = useTuftingStore((s) => s.gridSize);
   const setGridSize = useTuftingStore((s) => s.setGridSize);
   const hasImage = useTuftingStore((s) => s.images !== null);
+  const { t } = useTranslation();
 
   const gridOptions: GridSize[] =
     rugSettings.unit === "inches"
@@ -37,11 +39,11 @@ export function SettingsPanel() {
     <div className="space-y-5">
       <section className="space-y-3">
         <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-          Rug Dimensions
+          {t("settings.rugDimensions")}
         </h3>
         <div className="grid grid-cols-2 gap-2">
           <label className="block">
-            <span className="text-xs text-stone-500">Width</span>
+            <span className="text-xs text-stone-500">{t("settings.width")}</span>
             <input
               type="number"
               min={1}
@@ -53,7 +55,7 @@ export function SettingsPanel() {
             />
           </label>
           <label className="block">
-            <span className="text-xs text-stone-500">Height</span>
+            <span className="text-xs text-stone-500">{t("settings.height")}</span>
             <input
               type="number"
               min={1}
@@ -76,7 +78,7 @@ export function SettingsPanel() {
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              {unit === "inches" ? "Inches" : "Centimeters"}
+              {t(unit === "inches" ? "settings.inches" : "settings.centimeters")}
             </button>
           ))}
         </div>
@@ -84,12 +86,12 @@ export function SettingsPanel() {
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-          Tufting Type
+          {t("settings.tuftingType")}
         </h3>
         <div className="flex gap-2">
           {([
-            { value: "cut" as TuftingType, label: "Cut Pile" },
-            { value: "loop" as TuftingType, label: "Loop Pile" },
+            { value: "cut" as TuftingType, labelKey: "settings.cutPile" },
+            { value: "loop" as TuftingType, labelKey: "settings.loopPile" },
           ]).map((opt) => (
             <button
               key={opt.value}
@@ -100,15 +102,15 @@ export function SettingsPanel() {
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              {opt.label}
+              {t(opt.labelKey)}
             </button>
           ))}
         </div>
         <div className="flex gap-2">
           {([
-            { value: "low" as PileHeight, label: "Low" },
-            { value: "medium" as PileHeight, label: "Medium" },
-            { value: "high" as PileHeight, label: "High" },
+            { value: "low" as PileHeight, labelKey: "settings.pileLow" },
+            { value: "medium" as PileHeight, labelKey: "settings.pileMedium" },
+            { value: "high" as PileHeight, labelKey: "settings.pileHigh" },
           ]).map((opt) => (
             <button
               key={opt.value}
@@ -119,7 +121,7 @@ export function SettingsPanel() {
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200"
               }`}
             >
-              {opt.label}
+              {t(opt.labelKey)}
             </button>
           ))}
         </div>
@@ -127,11 +129,11 @@ export function SettingsPanel() {
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-          Color Reduction
+          {t("settings.colorReduction")}
         </h3>
         <label className="block">
           <div className="flex justify-between text-xs text-stone-500">
-            <span>Color count</span>
+            <span>{t("settings.colorCount")}</span>
             <span>{colorCount}</span>
           </div>
           <input
@@ -146,7 +148,7 @@ export function SettingsPanel() {
         </label>
         <label className="block">
           <div className="flex justify-between text-xs text-stone-500">
-            <span>Noise threshold (px)</span>
+            <span>{t("settings.noiseThreshold")}</span>
             <span>{noiseThreshold}</span>
           </div>
           <input
@@ -162,7 +164,7 @@ export function SettingsPanel() {
         </label>
         <label className="block">
           <div className="flex justify-between text-xs text-stone-500">
-            <span>Waste factor (%)</span>
+            <span>{t("settings.wasteFactor")}</span>
             <span>{wasteFactorPercent}</span>
           </div>
           <input
@@ -180,7 +182,7 @@ export function SettingsPanel() {
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-          View Options
+          {t("settings.viewOptions")}
         </h3>
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input
@@ -190,7 +192,7 @@ export function SettingsPanel() {
             disabled={!hasImage}
             className="accent-amber-600"
           />
-          Show Contours
+          {t("settings.showContours")}
         </label>
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input
@@ -200,7 +202,7 @@ export function SettingsPanel() {
             disabled={!hasImage}
             className="accent-amber-600"
           />
-          Show Mirrored Pattern
+          {t("settings.showMirrored")}
         </label>
         <label className="flex items-center gap-2 text-sm text-stone-600">
           <input
@@ -210,7 +212,7 @@ export function SettingsPanel() {
             disabled={!hasImage}
             className="accent-amber-600"
           />
-          Enable Grid
+          {t("settings.enableGrid")}
         </label>
         {showGrid && (
           <div className="flex gap-2">

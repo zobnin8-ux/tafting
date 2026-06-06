@@ -28,7 +28,8 @@ export function buildPalette(
   tuftingType: RugSettings["tuftingType"],
   pileHeight: RugSettings["pileHeight"],
   wasteFactorPercent: number,
-  colorNames: Map<string, string>
+  colorNames: Map<string, string>,
+  defaultColorName: (index: number) => string
 ): PaletteColor[] {
   const totalPixels = labels.length;
   const rugAreaSqM = getRugAreaSqM(
@@ -56,7 +57,7 @@ export function buildPalette(
       id: hex,
       hex,
       rgb: { r: c.r, g: c.g, b: c.b },
-      name: colorNames.get(hex) ?? `Color ${i + 1}`,
+      name: colorNames.get(hex) ?? defaultColorName(i),
       percentage,
       areaSqM,
       areaSqFt,

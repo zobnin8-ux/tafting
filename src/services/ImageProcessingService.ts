@@ -41,7 +41,8 @@ export async function processImage(
   wasteFactorPercent: number,
   colorNames: Map<string, string>,
   showGrid: boolean,
-  gridSize: string
+  gridSize: string,
+  defaultColorName: (index: number) => string
 ): Promise<ProcessingResult> {
   const img = await loadImageFromFile(file);
   const { canvas: originalCanvas } = imageToCanvas(img);
@@ -99,7 +100,8 @@ export async function processImage(
     rugSettings.tuftingType,
     rugSettings.pileHeight,
     wasteFactorPercent,
-    colorNames
+    colorNames,
+    defaultColorName
   );
 
   const materials = buildMaterialList(palette, rugSettings, wasteFactorPercent);
@@ -140,7 +142,8 @@ export function reprocessFromLabels(
   wasteFactorPercent: number,
   colorNames: Map<string, string>,
   showGrid: boolean,
-  gridSize: string
+  gridSize: string,
+  defaultColorName: (index: number) => string
 ): {
   images: Omit<ProcessedImages, "originalDataUrl">;
   palette: PaletteColor[];
@@ -205,7 +208,8 @@ export function reprocessFromLabels(
     rugSettings.tuftingType,
     rugSettings.pileHeight,
     wasteFactorPercent,
-    colorNames
+    colorNames,
+    defaultColorName
   );
 
   return {

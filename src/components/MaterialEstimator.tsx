@@ -1,17 +1,19 @@
 "use client";
 
 import { useTuftingStore } from "@/store/useTuftingStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getRugAreaSqM, metersToSqFt } from "@/lib/color";
 
 export function MaterialEstimator() {
   const materials = useTuftingStore((s) => s.materials);
   const rugSettings = useTuftingStore((s) => s.rugSettings);
   const palette = useTuftingStore((s) => s.palette);
+  const { t, skeinLabel, unitLabel } = useTranslation();
 
   if (!materials || palette.length === 0) {
     return (
       <div className="text-center text-sm text-stone-400 py-8">
-        Material list will appear after uploading an image
+        {t("materials.empty")}
       </div>
     );
   }
@@ -29,25 +31,33 @@ export function MaterialEstimator() {
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-        Materials List
+        {t("materials.title")}
       </h3>
 
       <div className="rounded-lg bg-stone-50 p-3 text-xs text-stone-500">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <span className="font-medium text-stone-700">Rug area:</span>{" "}
+            <span className="font-medium text-stone-700">
+              {t("materials.rugArea")}
+            </span>{" "}
             {totalAreaSqM.toFixed(3)} m² / {totalAreaSqFt.toFixed(2)} ft²
           </div>
           <div>
-            <span className="font-medium text-stone-700">Color coverage:</span>{" "}
+            <span className="font-medium text-stone-700">
+              {t("materials.colorCoverage")}
+            </span>{" "}
             {paletteAreaSqM.toFixed(3)} m²
           </div>
           <div>
-            <span className="font-medium text-stone-700">Total yarn:</span>{" "}
-            {totalYarnG}g ({totalSkeins} skeins)
+            <span className="font-medium text-stone-700">
+              {t("materials.totalYarn")}
+            </span>{" "}
+            {totalYarnG}g ({totalSkeins} {skeinLabel(totalSkeins, "materials")})
           </div>
           <div>
-            <span className="font-medium text-stone-700">Waste factor:</span>{" "}
+            <span className="font-medium text-stone-700">
+              {t("materials.wasteFactor")}
+            </span>{" "}
             {materials.wasteFactorPercent}%
           </div>
         </div>
@@ -55,7 +65,7 @@ export function MaterialEstimator() {
 
       <section>
         <h4 className="mb-2 text-xs font-semibold uppercase text-stone-500">
-          Yarn
+          {t("materials.yarn")}
         </h4>
         <div className="space-y-1.5">
           {materials.yarns.map((yarn) => (
@@ -71,8 +81,8 @@ export function MaterialEstimator() {
                 <span className="font-medium text-stone-700">{yarn.name}</span>
               </div>
               <span className="text-stone-500">
-                {yarn.weightG}g — {yarn.skeins} skein
-                {yarn.skeins !== 1 ? "s" : ""}
+                {yarn.weightG}g — {yarn.skeins}{" "}
+                {skeinLabel(yarn.skeins, "materials")}
               </span>
             </div>
           ))}
@@ -81,29 +91,31 @@ export function MaterialEstimator() {
 
       <section>
         <h4 className="mb-2 text-xs font-semibold uppercase text-stone-500">
-          Backing Cloth (+{materials.backingCloth.marginPercent}% margin)
+          {t("materials.backingCloth", {
+            m: materials.backingCloth.marginPercent,
+          })}
         </h4>
         <div className="rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-600">
           {materials.backingCloth.width.toFixed(1)} ×{" "}
           {materials.backingCloth.height.toFixed(1)}{" "}
-          {materials.backingCloth.unit}
+          {unitLabel(materials.backingCloth.unit)}
         </div>
       </section>
 
       <section>
         <h4 className="mb-2 text-xs font-semibold uppercase text-stone-500">
-          Secondary Backing
+          {t("materials.secondaryBacking")}
         </h4>
         <div className="rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-600">
           {materials.secondaryBacking.width.toFixed(1)} ×{" "}
           {materials.secondaryBacking.height.toFixed(1)}{" "}
-          {materials.secondaryBacking.unit}
+          {unitLabel(materials.secondaryBacking.unit)}
         </div>
       </section>
 
       <section>
         <h4 className="mb-2 text-xs font-semibold uppercase text-stone-500">
-          Glue
+          {t("materials.glue")}
         </h4>
         <div className="rounded-md border border-stone-200 px-3 py-2 text-sm text-stone-600">
           {materials.glueMl} ml

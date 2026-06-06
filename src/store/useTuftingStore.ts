@@ -9,6 +9,8 @@ import {
 } from "@/constants";
 import { processImage, reprocessFromLabels } from "@/services/ImageProcessingService";
 import { mergeColors } from "@/services/ColorReductionService";
+import { getDefaultColorName } from "@/i18n";
+import { useLocaleStore } from "@/store/useLocaleStore";
 import type {
   RugSettings,
   ProcessedImages,
@@ -18,6 +20,8 @@ import type {
   ComplexityAnalysis,
   PreviewMode,
   GridSize,
+  ProgressKey,
+  ErrorKey,
 } from "@/types";
 import type { Rgb } from "@/lib/color";
 
@@ -44,8 +48,8 @@ interface TuftingState {
   complexity: ComplexityAnalysis | null;
 
   isProcessing: boolean;
-  error: string | null;
-  progress: string | null;
+  error: ErrorKey | null;
+  progress: ProgressKey | null;
 
   setColorCount: (count: number) => void;
   setNoiseThreshold: (threshold: number) => void;
@@ -154,10 +158,11 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       originalFile: file,
       isProcessing: true,
       error: null,
-      progress: "Processing image...",
+      progress: "processing",
       previewMode: "original",
     });
     try {
+      const locale = useLocaleStore.getState().locale;
       const result = await processImage(
         file,
         get().colorCount,
@@ -166,7 +171,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         get().wasteFactorPercent,
         get().colorNames,
         get().showGrid,
-        get().gridSize
+        get().gridSize,
+        (i) => getDefaultColorName(locale, i)
       );
       set({
         images: result.images,
@@ -182,7 +188,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       });
     } catch (err) {
       set({
-        error: err instanceof Error ? err.message : "Processing failed",
+        error: "processingFailed",
         isProcessing: false,
         progress: null,
       });
@@ -192,8 +198,9 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   reprocess: async () => {
     const { originalFile } = get();
     if (!originalFile) return;
-    set({ isProcessing: true, error: null, progress: "Reprocessing..." });
+    set({ isProcessing: true, error: null, progress: "reprocessing" });
     try {
+      const locale = useLocaleStore.getState().locale;
       const result = await processImage(
         originalFile,
         get().colorCount,
@@ -202,7 +209,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         get().wasteFactorPercent,
         get().colorNames,
         get().showGrid,
-        get().gridSize
+        get().gridSize,
+        (i) => getDefaultColorName(locale, i)
       );
       set({
         images: {
@@ -220,7 +228,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       });
     } catch (err) {
       set({
-        error: err instanceof Error ? err.message : "Reprocessing failed",
+        error: "reprocessingFailed",
         isProcessing: false,
         progress: null,
       });
@@ -231,6 +239,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     const { labels, centroids, images, rugSettings, wasteFactorPercent, colorNames, showGrid, gridSize } = get();
     if (!labels || !centroids || !images) return;
 
+    const locale = useLocaleStore.getState().locale;
     const result = reprocessFromLabels(
       labels,
       centroids,
@@ -240,7 +249,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       wasteFactorPercent,
       colorNames,
       showGrid,
-      gridSize
+      gridSize,
+      (i) => getDefaultColorName(locale, i)
     );
 
     set({

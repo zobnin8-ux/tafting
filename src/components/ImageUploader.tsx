@@ -2,24 +2,26 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useTuftingStore } from "@/store/useTuftingStore";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export function ImageUploader() {
   const uploadImage = useTuftingStore((s) => s.uploadImage);
   const isProcessing = useTuftingStore((s) => s.isProcessing);
+  const { t } = useTranslation();
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
     (file: File) => {
       if (!ACCEPTED_TYPES.includes(file.type)) {
-        alert("Please upload a JPG, PNG, or WEBP image.");
+        alert(t("upload.invalidFormat"));
         return;
       }
       uploadImage(file);
     },
-    [uploadImage]
+    [uploadImage, t]
   );
 
   const onDrop = useCallback(
@@ -35,7 +37,7 @@ export function ImageUploader() {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-        Upload Image
+        {t("upload.title")}
       </h3>
       <div
         onDragOver={(e) => {
@@ -75,8 +77,8 @@ export function ImageUploader() {
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <p className="text-sm font-medium">Drag & drop or click to upload</p>
-          <p className="mt-1 text-xs text-stone-400">JPG, PNG, WEBP</p>
+          <p className="text-sm font-medium">{t("upload.dragDrop")}</p>
+          <p className="mt-1 text-xs text-stone-400">{t("upload.formats")}</p>
         </div>
       </div>
     </div>

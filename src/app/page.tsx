@@ -1,5 +1,10 @@
 import { TuftingApp } from "@/components/TuftingApp";
+import { LocaleProvider } from "@/components/LocaleProvider";
 
 export default function Home() {
-  return <TuftingApp />;
+  return (
+    <LocaleProvider>
+      <TuftingApp />
+    </LocaleProvider>
+  );
 }

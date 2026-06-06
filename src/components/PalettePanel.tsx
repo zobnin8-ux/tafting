@@ -1,6 +1,7 @@
 "use client";
 
 import { useTuftingStore } from "@/store/useTuftingStore";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function PalettePanel() {
   const palette = useTuftingStore((s) => s.palette);
@@ -11,6 +12,7 @@ export function PalettePanel() {
   const dismissMergeSuggestion = useTuftingStore(
     (s) => s.dismissMergeSuggestion
   );
+  const { t, skeinLabel } = useTranslation();
 
   const activeSuggestions = mergeSuggestions.filter(
     (s) =>
@@ -21,7 +23,7 @@ export function PalettePanel() {
   if (palette.length === 0) {
     return (
       <div className="text-center text-sm text-stone-400 py-8">
-        Palette will appear after uploading an image
+        {t("palette.empty")}
       </div>
     );
   }
@@ -29,7 +31,7 @@ export function PalettePanel() {
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-        Color Palette
+        {t("palette.title")}
       </h3>
 
       {activeSuggestions.length > 0 && (
@@ -44,12 +46,10 @@ export function PalettePanel() {
                   className="inline-block h-3 w-3 rounded-sm border border-stone-300"
                   style={{ backgroundColor: s.colorAHex }}
                 />{" "}
-                {s.colorAHex} and{" "}
-                <span
-                  className="inline-block h-3 w-3 rounded-sm border border-stone-300"
-                  style={{ backgroundColor: s.colorBHex }}
-                />{" "}
-                {s.colorBHex} are very similar. Merge?
+                {t("palette.mergeSuggestion", {
+                  a: s.colorAHex,
+                  b: s.colorBHex,
+                })}
               </p>
               <div className="mt-2 flex gap-2">
                 <button
@@ -58,7 +58,7 @@ export function PalettePanel() {
                   }
                   className="rounded-md bg-amber-600 px-3 py-1 text-xs font-medium text-white hover:bg-amber-700"
                 >
-                  Merge
+                  {t("palette.merge")}
                 </button>
                 <button
                   onClick={() =>
@@ -66,7 +66,7 @@ export function PalettePanel() {
                   }
                   className="rounded-md bg-stone-200 px-3 py-1 text-xs font-medium text-stone-600 hover:bg-stone-300"
                 >
-                  Dismiss
+                  {t("palette.dismiss")}
                 </button>
               </div>
             </div>
@@ -96,13 +96,17 @@ export function PalettePanel() {
                 <div>
                   RGB({color.rgb.r}, {color.rgb.g}, {color.rgb.b})
                 </div>
-                <div>{color.percentage.toFixed(1)}% of image</div>
+                <div>
+                  {t("palette.percentOfImage", {
+                    p: color.percentage.toFixed(1),
+                  })}
+                </div>
                 <div>
                   {color.areaSqM.toFixed(3)} m² / {color.areaSqFt.toFixed(2)} ft²
                 </div>
                 <div className="font-medium text-stone-700">
-                  {color.yarnWeightG}g — {color.skeins} skein
-                  {color.skeins !== 1 ? "s" : ""}
+                  {color.yarnWeightG}g — {color.skeins}{" "}
+                  {skeinLabel(color.skeins)}
                 </div>
               </div>
             </div>

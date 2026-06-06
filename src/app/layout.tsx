@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tufting Pattern Generator",
+  title: "Генератор тафтинг-узоров",
   description:
-    "Convert images into tufting-ready rug patterns with yarn estimates and printable exports.",
+    "Преобразование изображений в узоры для тафтинга с расчётом пряжи и экспортом в PDF.",
 };
 
 export default function RootLayout({
@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="ru"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans">{children}</body>

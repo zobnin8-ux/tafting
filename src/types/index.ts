@@ -72,8 +72,11 @@ export interface ProcessedImages {
   height: number;
 }
 
+export type ProgressKey = "processing" | "reprocessing";
+export type ErrorKey = "processingFailed" | "reprocessingFailed";
+
 export interface ProcessingState {
   isProcessing: boolean;
-  error: string | null;
-  progress: string | null;
+  error: ErrorKey | null;
+  progress: ProgressKey | null;
 }
