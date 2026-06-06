@@ -27,6 +27,7 @@ export function SettingsPanel() {
   const setShowGrid = useTuftingStore((s) => s.setShowGrid);
   const gridSize = useTuftingStore((s) => s.gridSize);
   const setGridSize = useTuftingStore((s) => s.setGridSize);
+  const commitReprocess = useTuftingStore((s) => s.commitReprocess);
   const hasImage = useTuftingStore((s) => s.images !== null);
   const { t } = useTranslation();
 
@@ -142,6 +143,8 @@ export function SettingsPanel() {
             max={COLOR_COUNT_MAX}
             value={colorCount}
             onChange={(e) => setColorCount(Number(e.target.value))}
+            onMouseUp={commitReprocess}
+            onTouchEnd={commitReprocess}
             disabled={!hasImage}
             className="mt-1 w-full accent-amber-600"
           />
@@ -158,6 +161,8 @@ export function SettingsPanel() {
             step={10}
             value={noiseThreshold}
             onChange={(e) => setNoiseThreshold(Number(e.target.value))}
+            onMouseUp={commitReprocess}
+            onTouchEnd={commitReprocess}
             disabled={!hasImage}
             className="mt-1 w-full accent-amber-600"
           />

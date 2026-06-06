@@ -40,6 +40,16 @@ export function PatternPreview() {
 
   const url = getUrl();
 
+  const fallbackUrl =
+    images?.originalDataUrl ||
+    images?.reducedDataUrl ||
+    images?.contourDataUrl ||
+    null;
+
+  const displayUrl =
+    url ||
+    (previewMode === "original" ? fallbackUrl : null);
+
   const complexityColors: Record<ComplexityRating, string> = {
     easy: "bg-green-100 text-green-800",
     medium: "bg-yellow-100 text-yellow-800",
@@ -96,26 +106,29 @@ export function PatternPreview() {
           </div>
         )}
 
-        {(url || (previewMode === "original" && images?.originalDataUrl)) && (
+        {images && displayUrl && (
           <div className="flex h-full w-full items-center justify-center p-4">
-            {previewMode === "reduced" && images?.originalDataUrl ? (
+            {previewMode === "reduced" &&
+            (images.originalDataUrl || images.reducedDataUrl) ? (
               <div className="flex h-full w-full gap-4">
-                <div className="flex flex-1 flex-col items-center">
-                  <span className="mb-1 text-xs text-stone-400">
-                    {t("preview.original")}
-                  </span>
-                  <img
-                    src={images.originalDataUrl}
-                    alt={t("preview.original")}
-                    className="max-h-full max-w-full object-contain"
-                  />
-                </div>
+                {images.originalDataUrl && (
+                  <div className="flex flex-1 flex-col items-center">
+                    <span className="mb-1 text-xs text-stone-400">
+                      {t("preview.original")}
+                    </span>
+                    <img
+                      src={images.originalDataUrl}
+                      alt={t("preview.original")}
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                )}
                 <div className="flex flex-1 flex-col items-center">
                   <span className="mb-1 text-xs text-stone-400">
                     {t("preview.reduced")}
                   </span>
                   <img
-                    src={url ?? images.reducedDataUrl}
+                    src={images.reducedDataUrl || displayUrl}
                     alt={t("preview.reduced")}
                     className="max-h-full max-w-full object-contain"
                   />
@@ -123,11 +136,7 @@ export function PatternPreview() {
               </div>
             ) : (
               <img
-                src={
-                  previewMode === "original"
-                    ? images!.originalDataUrl
-                    : url!
-                }
+                src={displayUrl}
                 alt={t("preview.title")}
                 className="max-h-full max-w-full object-contain"
               />

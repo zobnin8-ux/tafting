@@ -9,6 +9,8 @@ export function PalettePanel() {
   const mergeSuggestions = useTuftingStore((s) => s.mergeSuggestions);
   const dismissedMerges = useTuftingStore((s) => s.dismissedMerges);
   const mergePaletteColors = useTuftingStore((s) => s.mergePaletteColors);
+  const undoLastMerge = useTuftingStore((s) => s.undoLastMerge);
+  const mergeUndoStack = useTuftingStore((s) => s.mergeUndoStack);
   const dismissMergeSuggestion = useTuftingStore(
     (s) => s.dismissMergeSuggestion
   );
@@ -30,9 +32,19 @@ export function PalettePanel() {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-        {t("palette.title")}
-      </h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
+          {t("palette.title")}
+        </h3>
+        {mergeUndoStack.length > 0 && (
+          <button
+            onClick={undoLastMerge}
+            className="shrink-0 rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900"
+          >
+            {t("palette.undoMerge")}
+          </button>
+        )}
+      </div>
 
       {activeSuggestions.length > 0 && (
         <div className="space-y-2">

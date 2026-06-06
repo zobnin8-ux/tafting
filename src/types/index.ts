@@ -75,6 +75,13 @@ export interface ProcessedImages {
 export type ProgressKey = "processing" | "reprocessing";
 export type ErrorKey = "processingFailed" | "reprocessingFailed";
 
+export interface MergeUndoSnapshot {
+  labels: Int32Array;
+  centroids: Array<{ r: number; g: number; b: number }>;
+  colorCount: number;
+  colorNames: Map<string, string>;
+}
+
 export interface ProcessingState {
   isProcessing: boolean;
   error: ErrorKey | null;

@@ -11,6 +11,12 @@ import { processImage, reprocessFromLabels } from "@/services/ImageProcessingSer
 import { mergeColors } from "@/services/ColorReductionService";
 import { getDefaultColorName } from "@/i18n";
 import { useLocaleStore } from "@/store/useLocaleStore";
+import {
+  beginReprocess,
+  isLatestReprocess,
+  scheduleReprocess,
+  flushScheduledReprocess,
+} from "@/store/reprocessManager";
 import type {
   RugSettings,
   ProcessedImages,
@@ -22,6 +28,7 @@ import type {
   GridSize,
   ProgressKey,
   ErrorKey,
+  MergeUndoSnapshot,
 } from "@/types";
 import type { Rgb } from "@/lib/color";
 
@@ -38,6 +45,7 @@ interface TuftingState {
   previewMode: PreviewMode;
   colorNames: Map<string, string>;
   dismissedMerges: Set<string>;
+  mergeUndoStack: MergeUndoSnapshot[];
 
   images: ProcessedImages | null;
   labels: Int32Array | null;
@@ -64,9 +72,11 @@ interface TuftingState {
   uploadImage: (file: File) => Promise<void>;
   reprocess: () => Promise<void>;
   mergePaletteColors: (colorAId: string, colorBId: string) => Promise<void>;
+  undoLastMerge: () => void;
   dismissMergeSuggestion: (colorAId: string, colorBId: string) => void;
   getActivePreviewUrl: () => string | null;
   recalculate: () => void;
+  commitReprocess: () => void;
 }
 
 export const useTuftingStore = create<TuftingState>((set, get) => ({
@@ -82,6 +92,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   previewMode: "reduced",
   colorNames: new Map(),
   dismissedMerges: new Set(),
+  mergeUndoStack: [],
 
   images: null,
   labels: null,
@@ -97,12 +108,14 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
 
   setColorCount: (count) => {
     set({ colorCount: count });
-    get().reprocess();
+    if (!get().originalFile || !get().images) return;
+    scheduleReprocess(() => get().reprocess());
   },
 
   setNoiseThreshold: (threshold) => {
     set({ noiseThreshold: threshold });
-    get().reprocess();
+    if (!get().originalFile || !get().images) return;
+    scheduleReprocess(() => get().reprocess());
   },
 
   setWasteFactorPercent: (percent) => {
@@ -183,6 +196,7 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         mergeSuggestions: result.mergeSuggestions,
         complexity: result.complexity,
         previewMode: "reduced",
+        mergeUndoStack: [],
         isProcessing: false,
         progress: null,
       });
@@ -196,43 +210,53 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   },
 
   reprocess: async () => {
-    const { originalFile } = get();
-    if (!originalFile) return;
+    const state = get();
+    if (!state.originalFile || !state.images) return;
+
+    const generation = beginReprocess();
     set({ isProcessing: true, error: null, progress: "reprocessing" });
+
     try {
       const locale = useLocaleStore.getState().locale;
       const result = await processImage(
-        originalFile,
-        get().colorCount,
-        get().noiseThreshold,
-        get().rugSettings,
-        get().wasteFactorPercent,
-        get().colorNames,
-        get().showGrid,
-        get().gridSize,
+        state.originalFile,
+        state.colorCount,
+        state.noiseThreshold,
+        state.rugSettings,
+        state.wasteFactorPercent,
+        state.colorNames,
+        state.showGrid,
+        state.gridSize,
         (i) => getDefaultColorName(locale, i)
       );
+
+      if (!isLatestReprocess(generation)) return;
+
       set({
-        images: {
-          ...result.images,
-          originalDataUrl: get().images?.originalDataUrl ?? result.images.originalDataUrl,
-        },
+        images: result.images,
         labels: result.labels,
         centroids: result.centroids,
         palette: result.palette,
         materials: result.materials,
         mergeSuggestions: result.mergeSuggestions,
         complexity: result.complexity,
+        mergeUndoStack: [],
         isProcessing: false,
         progress: null,
       });
-    } catch (err) {
+    } catch {
+      if (!isLatestReprocess(generation)) return;
       set({
         error: "reprocessingFailed",
         isProcessing: false,
         progress: null,
       });
     }
+  },
+
+  commitReprocess: () => {
+    if (!get().originalFile || !get().images) return;
+    flushScheduledReprocess(() => get().reprocess());
   },
 
   recalculate: () => {
@@ -274,6 +298,13 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     const idxB = palette.findIndex((c) => c.id === colorBId);
     if (idxA < 0 || idxB < 0) return;
 
+    const snapshot: MergeUndoSnapshot = {
+      labels: new Int32Array(labels),
+      centroids: centroids.map((c) => ({ ...c })),
+      colorCount: get().colorCount,
+      colorNames: new Map(get().colorNames),
+    };
+
     const { labels: newLabels, centroids: newCentroids } = mergeColors(
       labels,
       centroids,
@@ -283,7 +314,27 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
       images.height
     );
 
-    set({ labels: newLabels, centroids: newCentroids, colorCount: newCentroids.length });
+    set({
+      labels: newLabels,
+      centroids: newCentroids,
+      colorCount: newCentroids.length,
+      mergeUndoStack: [...get().mergeUndoStack, snapshot],
+    });
+    get().recalculate();
+  },
+
+  undoLastMerge: () => {
+    const stack = get().mergeUndoStack;
+    if (stack.length === 0) return;
+
+    const snapshot = stack[stack.length - 1];
+    set({
+      labels: new Int32Array(snapshot.labels),
+      centroids: snapshot.centroids.map((c) => ({ ...c })),
+      colorCount: snapshot.colorCount,
+      colorNames: new Map(snapshot.colorNames),
+      mergeUndoStack: stack.slice(0, -1),
+    });
     get().recalculate();
   },
 
