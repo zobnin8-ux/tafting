@@ -47,7 +47,7 @@ export function PalettePanel() {
       </div>
 
       {activeSuggestions.length > 0 && (
-        <div className="space-y-2">
+        <div className="max-h-48 space-y-2 overflow-y-auto">
           {activeSuggestions.map((s) => (
             <div
               key={`${s.colorAId}-${s.colorBId}`}
@@ -86,7 +86,7 @@ export function PalettePanel() {
         </div>
       )}
 
-      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+      <div className="max-h-64 space-y-2 overflow-y-auto">
         {palette.map((color) => (
           <div
             key={color.id}

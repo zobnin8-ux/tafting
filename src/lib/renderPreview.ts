@@ -51,20 +51,28 @@ async function renderOriginal(
   width: number,
   height: number,
   originalFile: File | null,
-  originalPreviewUrl: string | null
+  originalPreviewUrl: string | null,
+  originalDataUrl: string | null
 ): Promise<HTMLCanvasElement> {
   const { canvas, ctx } = createCanvas(width, height);
 
-  if (originalFile) {
-    const img = await loadImageFromFile(originalFile);
-    ctx.drawImage(img, 0, 0, width, height);
-    return canvas;
-  }
+  const sources = [
+    originalFile,
+    originalPreviewUrl,
+    originalDataUrl,
+  ].filter(Boolean) as Array<File | string>;
 
-  if (originalPreviewUrl) {
-    const img = await loadImageFromDataUrl(originalPreviewUrl);
-    ctx.drawImage(img, 0, 0, width, height);
-    return canvas;
+  for (const source of sources) {
+    try {
+      const img =
+        typeof source === "string"
+          ? await loadImageFromDataUrl(source)
+          : await loadImageFromFile(source);
+      ctx.drawImage(img, 0, 0, width, height);
+      return canvas;
+    } catch {
+      continue;
+    }
   }
 
   throw new Error("Original image unavailable");
@@ -78,6 +86,7 @@ export interface RenderPreviewParams {
   height: number;
   originalFile: File | null;
   originalPreviewUrl: string | null;
+  originalDataUrl: string | null;
   rugSettings: RugSettings;
   showGrid: boolean;
   gridSize: GridSize;
@@ -95,6 +104,7 @@ export async function renderPreviewCanvas(
     height,
     originalFile,
     originalPreviewUrl,
+    originalDataUrl,
     rugSettings,
     showGrid,
     gridSize,
@@ -102,7 +112,13 @@ export async function renderPreviewCanvas(
   } = params;
 
   if (mode === "original") {
-    return renderOriginal(width, height, originalFile, originalPreviewUrl);
+    return renderOriginal(
+      width,
+      height,
+      originalFile,
+      originalPreviewUrl,
+      originalDataUrl
+    );
   }
 
   const reduced = labelsToCanvas(labels, centroids, width, height);

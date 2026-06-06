@@ -34,8 +34,8 @@ export function TuftingApp() {
         </div>
       )}
 
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 gap-4 p-4 lg:p-6">
-        <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:w-72 xl:w-80">
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 items-start gap-4 p-4 lg:p-6">
+        <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 xl:w-80">
           <ImageUploader />
           <hr className="border-stone-200" />
           <SettingsPanel />
@@ -43,11 +43,11 @@ export function TuftingApp() {
           <ExportManager />
         </aside>
 
-        <section className="min-h-[400px] flex-1 rounded-xl border border-stone-200 bg-white p-4 lg:min-h-0">
+        <section className="flex min-w-0 flex-1 flex-col self-start rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4">
           <PatternPreview />
         </section>
 
-        <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:w-72 xl:w-80">
+        <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 xl:w-80">
           <PalettePanel />
           <hr className="border-stone-200" />
           <MaterialEstimator />

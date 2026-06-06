@@ -33,8 +33,8 @@ export function PatternPreview() {
   const canRender = images && labels;
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="mb-3 flex items-center justify-between">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
         <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
           {t("preview.title")}
         </h3>
@@ -48,7 +48,7 @@ export function PatternPreview() {
       </div>
 
       {canRender && (
-        <div className="mb-3 flex gap-1 rounded-lg bg-stone-100 p-1">
+        <div className="mb-3 flex shrink-0 gap-1 rounded-lg bg-stone-100 p-1">
           {MODES.map((mode) => (
             <button
               key={mode.value}
@@ -65,7 +65,8 @@ export function PatternPreview() {
         </div>
       )}
 
-      <div className="relative flex min-h-[300px] flex-1 items-center justify-center overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+      {/* Fixed preview viewport — image always stays here */}
+      <div className="relative h-[min(58vh,560px)] min-h-[320px] shrink-0 overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
         {isProcessing && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-600 border-t-transparent" />
@@ -76,41 +77,41 @@ export function PatternPreview() {
         )}
 
         {!canRender && !isProcessing && (
-          <div className="text-center text-stone-400">
+          <div className="absolute inset-0 flex items-center justify-center text-stone-400">
             <p className="text-sm">{t("preview.empty")}</p>
           </div>
         )}
 
-        {canRender && (
-          <div className="flex h-full w-full items-center justify-center p-4">
-            {previewMode === "reduced" ? (
-              <div className="flex h-full w-full gap-4">
-                <div className="flex min-h-0 flex-1 flex-col items-center">
-                  <span className="mb-1 shrink-0 text-xs text-stone-400">
-                    {t("preview.original")}
-                  </span>
-                  <div className="flex min-h-0 flex-1 items-center justify-center">
-                    <PreviewCanvas mode="original" />
-                  </div>
-                </div>
-                <div className="flex min-h-0 flex-1 flex-col items-center">
-                  <span className="mb-1 shrink-0 text-xs text-stone-400">
-                    {t("preview.reduced")}
-                  </span>
-                  <div className="flex min-h-0 flex-1 items-center justify-center">
-                    <PreviewCanvas mode="reduced" />
-                  </div>
-                </div>
+        {canRender && previewMode === "reduced" && (
+          <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
+            <div className="flex min-h-0 flex-col overflow-hidden">
+              <span className="mb-1 shrink-0 text-center text-xs text-stone-400">
+                {t("preview.original")}
+              </span>
+              <div className="relative min-h-0 flex-1">
+                <PreviewCanvas mode="original" />
               </div>
-            ) : (
-              <PreviewCanvas mode={previewMode} />
-            )}
+            </div>
+            <div className="flex min-h-0 flex-col overflow-hidden">
+              <span className="mb-1 shrink-0 text-center text-xs text-stone-400">
+                {t("preview.reduced")}
+              </span>
+              <div className="relative min-h-0 flex-1">
+                <PreviewCanvas mode="reduced" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {canRender && previewMode !== "reduced" && (
+          <div className="absolute inset-0 p-2">
+            <PreviewCanvas mode={previewMode} />
           </div>
         )}
       </div>
 
       {complexity && canRender && (
-        <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs text-stone-500">
+        <div className="mt-3 grid shrink-0 grid-cols-3 gap-2 text-center text-xs text-stone-500">
           <div className="rounded-md bg-stone-50 p-2">
             <div className="font-medium text-stone-700">
               {complexity.colorRegionCount}
