@@ -141,10 +141,13 @@ export function reprocessFromLabels(
   colorNames: Map<string, string>,
   showGrid: boolean,
   gridSize: string
-): Pick<
-  ProcessingResult,
-  "images" | "palette" | "materials" | "mergeSuggestions" | "complexity"
-> {
+): {
+  images: Omit<ProcessedImages, "originalDataUrl">;
+  palette: PaletteColor[];
+  materials: MaterialList;
+  mergeSuggestions: ColorMergeSuggestion[];
+  complexity: ComplexityAnalysis;
+} {
   const { canvas: reducedCanvas } = reduceColorsFromLabels(
     labels,
     centroids,
@@ -207,7 +210,6 @@ export function reprocessFromLabels(
 
   return {
     images: {
-      originalDataUrl: "",
       reducedDataUrl: canvasToDataUrl(displayReduced),
       contourDataUrl: canvasToDataUrl(displayContour),
       mirroredDataUrl: canvasToDataUrl(displayMirrored),

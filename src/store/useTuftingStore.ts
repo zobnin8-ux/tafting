@@ -135,8 +135,18 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   setColorName: (hex, name) => {
     const colorNames = new Map(get().colorNames);
     colorNames.set(hex, name);
-    set({ colorNames });
-    get().recalculate();
+    const palette = get().palette.map((c) =>
+      c.hex === hex ? { ...c, name } : c
+    );
+    const materials = get().materials
+      ? {
+          ...get().materials!,
+          yarns: get().materials!.yarns.map((y) =>
+            y.hex === hex ? { ...y, name } : y
+          ),
+        }
+      : null;
+    set({ colorNames, palette, materials });
   },
 
   uploadImage: async (file) => {
@@ -234,7 +244,11 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
     );
 
     set({
-      images: { ...images, ...result.images },
+      images: {
+        ...images,
+        ...result.images,
+        originalDataUrl: images.originalDataUrl,
+      },
       palette: result.palette,
       materials: result.materials,
       mergeSuggestions: result.mergeSuggestions,

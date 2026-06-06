@@ -92,34 +92,34 @@ export function PatternPreview() {
           </div>
         )}
 
-        {url && (
+        {(url || (previewMode === "original" && images?.originalDataUrl)) && (
           <div className="flex h-full w-full items-center justify-center p-4">
-            {previewMode === "original" || previewMode === "reduced" ? (
+            {previewMode === "reduced" && images?.originalDataUrl ? (
               <div className="flex h-full w-full gap-4">
-                {images?.originalDataUrl && previewMode === "reduced" && (
-                  <div className="flex flex-1 flex-col items-center">
-                    <span className="mb-1 text-xs text-stone-400">Original</span>
-                    <img
-                      src={images.originalDataUrl}
-                      alt="Original"
-                      className="max-h-full max-w-full object-contain"
-                    />
-                  </div>
-                )}
                 <div className="flex flex-1 flex-col items-center">
-                  {previewMode === "reduced" && (
-                    <span className="mb-1 text-xs text-stone-400">Reduced</span>
-                  )}
+                  <span className="mb-1 text-xs text-stone-400">Original</span>
                   <img
-                    src={url}
-                    alt="Pattern preview"
+                    src={images.originalDataUrl}
+                    alt="Original"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col items-center">
+                  <span className="mb-1 text-xs text-stone-400">Reduced</span>
+                  <img
+                    src={url ?? images.reducedDataUrl}
+                    alt="Reduced pattern"
                     className="max-h-full max-w-full object-contain"
                   />
                 </div>
               </div>
             ) : (
               <img
-                src={url}
+                src={
+                  previewMode === "original"
+                    ? images!.originalDataUrl
+                    : url!
+                }
                 alt="Pattern preview"
                 className="max-h-full max-w-full object-contain"
               />
