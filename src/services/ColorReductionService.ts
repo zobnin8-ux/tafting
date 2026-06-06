@@ -173,7 +173,38 @@ export function reduceColors(
   const imageData = ctx.getImageData(0, 0, width, height);
 
   const sampled = samplePixels(imageData.data, width, height);
-  const centroids = kMeansCluster(sampled, colorCount);
+  if (sampled.length === 0) {
+    const fallback: Rgb = { r: 255, g: 255, b: 255 };
+    const labels = new Int32Array(width * height);
+    const centroids = [fallback];
+    return {
+      canvas: labelsToCanvas(labels, centroids, width, height),
+      labels,
+      centroids,
+      width,
+      height,
+    };
+  }
+
+  const rawCentroids = kMeansCluster(sampled, colorCount);
+  if (rawCentroids.length === 0) {
+    const avg: Rgb = {
+      r: Math.round(sampled.reduce((s, p) => s + p.r, 0) / sampled.length),
+      g: Math.round(sampled.reduce((s, p) => s + p.g, 0) / sampled.length),
+      b: Math.round(sampled.reduce((s, p) => s + p.b, 0) / sampled.length),
+    };
+    const labels = new Int32Array(width * height);
+    const centroids = [avg];
+    return {
+      canvas: labelsToCanvas(labels, centroids, width, height),
+      labels,
+      centroids,
+      width,
+      height,
+    };
+  }
+
+  const centroids = rawCentroids;
 
   let labels = assignLabels(imageData.data, width, height, centroids);
   labels = removeSmallRegions(labels, width, height, noiseThreshold);

@@ -109,7 +109,7 @@ function medianFilter(
   radius: number
 ): Uint8ClampedArray<ArrayBuffer> {
   if (radius <= 0) return new Uint8ClampedArray(data);
-  const out = new Uint8ClampedArray(data.length);
+  const out = new Uint8ClampedArray(data);
   for (let y = radius; y < height - radius; y++) {
     for (let x = radius; x < width - radius; x++) {
       const rs: number[] = [];
@@ -202,7 +202,7 @@ function thickenThinLines(
   minWidth: number
 ): Uint8ClampedArray<ArrayBuffer> {
   if (minWidth <= 1) return new Uint8ClampedArray(data);
-  const out = new Uint8ClampedArray(data.length);
+  let out = new Uint8ClampedArray(data);
   const passes = minWidth - 1;
 
   for (let pass = 0; pass < passes; pass++) {
@@ -393,24 +393,31 @@ function buildWarnings(
   );
 
   let smallRegions = 0;
-  const sampled = samplePixels(originalData, width, height, 4);
-  if (sampled.length > 0) {
+  const warnSample = samplePixels(originalData, width, height, 8);
+  if (warnSample.length > 0) {
     const quickCentroids = kMeansCluster(
-      sampled,
-      Math.min(24, sampled.length)
+      warnSample,
+      Math.min(16, warnSample.length)
     );
     if (quickCentroids.length > 0) {
-      const quickLabels = assignLabels(
-        originalData,
-        width,
-        height,
-        quickCentroids
-      );
+      const sw = Math.ceil(width / 8);
+      const sh = Math.ceil(height / 8);
+      const quickLabels = new Int32Array(sw * sh);
+      for (let y = 0; y < sh; y++) {
+        for (let x = 0; x < sw; x++) {
+          const px = Math.min(x * 8, width - 1);
+          const py = Math.min(y * 8, height - 1);
+          quickLabels[y * sw + x] = findNearestCentroid(
+            getPixel(originalData, py * width + px),
+            quickCentroids
+          );
+        }
+      }
       smallRegions = countSmallRegions(
         quickLabels,
-        width,
-        height,
-        regionThreshold
+        sw,
+        sh,
+        Math.max(1, Math.round(regionThreshold / 64))
       );
     }
   }
