@@ -12,6 +12,16 @@ export type PreviewMode =
   | "mirrored";
 
 export type ColorMapLabelMode = "numbers" | "names";
+export type YarnCatalogId = "dmc" | "tuft-the-world";
+
+export interface YarnColorMatch {
+  catalogId: YarnCatalogId;
+  colorId: string;
+  name: string;
+  hex: string;
+  distance: number;
+  approximate?: boolean;
+}
 
 export interface RugSettings {
   width: number;
@@ -32,6 +42,7 @@ export interface PaletteColor {
   pixelCount: number;
   yarnWeightG: number;
   skeins: number;
+  yarnMatches?: YarnColorMatch[];
 }
 
 export interface ColorMergeSuggestion {

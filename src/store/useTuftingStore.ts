@@ -13,6 +13,7 @@ import {
   regenerateOriginalPreview,
 } from "@/services/ImageProcessingService";
 import { mergeColors } from "@/services/ColorReductionService";
+import { attachYarnMatches } from "@/services/YarnMatchService";
 import { getDefaultColorName } from "@/i18n";
 import { isValidDataUrl, resolvePreviewUrl } from "@/lib/preview";
 import { useLocaleStore } from "@/store/useLocaleStore";
@@ -50,6 +51,8 @@ interface TuftingState {
   showGrid: boolean;
   gridSize: GridSize;
   colorMapLabelMode: ColorMapLabelMode;
+  matchDmc: boolean;
+  matchTuftTheWorld: boolean;
   previewMode: PreviewMode;
   colorNames: Map<string, string>;
   dismissedMerges: Set<string>;
@@ -76,6 +79,8 @@ interface TuftingState {
   setShowGrid: (show: boolean) => void;
   setGridSize: (size: GridSize) => void;
   setColorMapLabelMode: (mode: ColorMapLabelMode) => void;
+  setMatchDmc: (match: boolean) => void;
+  setMatchTuftTheWorld: (match: boolean) => void;
   setPreviewMode: (mode: PreviewMode) => void;
   setColorName: (hex: string, name: string) => void;
   uploadImage: (file: File) => Promise<void>;
@@ -87,6 +92,17 @@ interface TuftingState {
   recalculate: () => void;
   commitReprocess: () => void;
   repairPreviewUrls: () => Promise<void>;
+}
+
+function withYarnMatches(
+  palette: PaletteColor[],
+  matchDmc: boolean,
+  matchTuftTheWorld: boolean
+): PaletteColor[] {
+  return attachYarnMatches(palette, {
+    dmc: matchDmc,
+    tuftTheWorld: matchTuftTheWorld,
+  });
 }
 
 export const useTuftingStore = create<TuftingState>((set, get) => ({
@@ -101,6 +117,8 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
   showGrid: false,
   gridSize: "1in",
   colorMapLabelMode: "numbers",
+  matchDmc: true,
+  matchTuftTheWorld: true,
   previewMode: "reduced",
   colorNames: new Map(),
   dismissedMerges: new Set(),
@@ -161,6 +179,24 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
 
   setColorMapLabelMode: (mode) => set({ colorMapLabelMode: mode }),
 
+  setMatchDmc: (matchDmc) => {
+    set({
+      matchDmc,
+      palette: withYarnMatches(
+        get().palette,
+        matchDmc,
+        get().matchTuftTheWorld
+      ),
+    });
+  },
+
+  setMatchTuftTheWorld: (matchTuftTheWorld) => {
+    set({
+      matchTuftTheWorld,
+      palette: withYarnMatches(get().palette, get().matchDmc, matchTuftTheWorld),
+    });
+  },
+
   setPreviewMode: (mode) => set({ previewMode: mode }),
 
   setColorName: (hex, name) => {
@@ -206,7 +242,11 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         images: result.images,
         labels: result.labels,
         centroids: result.centroids,
-        palette: result.palette,
+        palette: withYarnMatches(
+          result.palette,
+          get().matchDmc,
+          get().matchTuftTheWorld
+        ),
         materials: result.materials,
         mergeSuggestions: result.mergeSuggestions,
         complexity: result.complexity,
@@ -252,7 +292,11 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         images: result.images,
         labels: result.labels,
         centroids: result.centroids,
-        palette: result.palette,
+        palette: withYarnMatches(
+          result.palette,
+          get().matchDmc,
+          get().matchTuftTheWorld
+        ),
         materials: result.materials,
         mergeSuggestions: result.mergeSuggestions,
         complexity: result.complexity,
@@ -316,7 +360,11 @@ export const useTuftingStore = create<TuftingState>((set, get) => ({
         ...result.images,
         originalDataUrl: original,
       },
-      palette: result.palette,
+      palette: withYarnMatches(
+        result.palette,
+        get().matchDmc,
+        get().matchTuftTheWorld
+      ),
       materials: result.materials,
       mergeSuggestions: result.mergeSuggestions,
       complexity: result.complexity,

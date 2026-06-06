@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import { translate, getSkeinLabel, getUnitLabel, type Locale } from "@/i18n";
+import { formatYarnMatchLabel } from "@/services/YarnMatchService";
 import type { ProcessedImages, PaletteColor, MaterialList } from "@/types";
 
 async function loadImage(dataUrl: string): Promise<HTMLImageElement> {
@@ -86,7 +87,23 @@ export async function exportPdf(
       margin + 12,
       yPos
     );
-    yPos += 10;
+    yPos += 7;
+    if (color.yarnMatches && color.yarnMatches.length > 0) {
+      pdf.setFontSize(9);
+      const matches = color.yarnMatches
+        .map((match) => {
+          const prefix =
+            match.catalogId === "dmc"
+              ? translate(locale, "yarn.catalogDmc")
+              : translate(locale, "yarn.catalogTuftTheWorld");
+          return `${prefix}: ${formatYarnMatchLabel(match)}`;
+        })
+        .join(" | ");
+      pdf.text(`→ ${matches}`, margin + 12, yPos);
+      yPos += 6;
+      pdf.setFontSize(10);
+    }
+    yPos += 3;
     if (yPos > pageHeight - 20) {
       pdf.addPage();
       yPos = 25;

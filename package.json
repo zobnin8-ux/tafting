@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build:catalogs": "node scripts/build-yarn-catalogs.mjs"
   },
   "dependencies": {
     "html-to-image": "^1.11.13",

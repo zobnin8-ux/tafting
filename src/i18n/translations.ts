@@ -40,6 +40,16 @@ export const translations = {
       colorMapLabels: "Подписи на карте цветов",
       colorMapNumbers: "Номера",
       colorMapNames: "Названия",
+      yarnMatching: "Сопоставление пряжи",
+      matchDmc: "DMC мулине (453 цвета)",
+      matchTuftTheWorld: "Tuft the World — Reflect Wool",
+      yarnMatchingNote:
+        "DMC — по сканам ниток. Tuft the World — приблизительно по названию цвета, сверяйте с карточкой образцов.",
+    },
+    yarn: {
+      catalogDmc: "DMC",
+      catalogTuftTheWorld: "Tuft the World",
+      approximate: "прибл.",
     },
     preview: {
       title: "Предпросмотр узора",
@@ -167,6 +177,16 @@ export const translations = {
       colorMapLabels: "Color map labels",
       colorMapNumbers: "Numbers",
       colorMapNames: "Yarn names",
+      yarnMatching: "Yarn matching",
+      matchDmc: "DMC floss (453 colors)",
+      matchTuftTheWorld: "Tuft the World — Reflect Wool",
+      yarnMatchingNote:
+        "DMC uses scanned thread values. Tuft the World is approximate by color name — verify with a sample card.",
+    },
+    yarn: {
+      catalogDmc: "DMC",
+      catalogTuftTheWorld: "Tuft the World",
+      approximate: "approx.",
     },
     preview: {
       title: "Pattern Preview",

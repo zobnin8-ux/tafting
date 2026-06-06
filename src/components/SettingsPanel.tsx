@@ -29,6 +29,10 @@ export function SettingsPanel() {
   const setGridSize = useTuftingStore((s) => s.setGridSize);
   const colorMapLabelMode = useTuftingStore((s) => s.colorMapLabelMode);
   const setColorMapLabelMode = useTuftingStore((s) => s.setColorMapLabelMode);
+  const matchDmc = useTuftingStore((s) => s.matchDmc);
+  const setMatchDmc = useTuftingStore((s) => s.setMatchDmc);
+  const matchTuftTheWorld = useTuftingStore((s) => s.matchTuftTheWorld);
+  const setMatchTuftTheWorld = useTuftingStore((s) => s.setMatchTuftTheWorld);
   const commitReprocess = useTuftingStore((s) => s.commitReprocess);
   const hasImage = useTuftingStore((s) => s.images !== null);
   const { t } = useTranslation();
@@ -221,6 +225,34 @@ export function SettingsPanel() {
           />
           {t("settings.enableGrid")}
         </label>
+        <div className="space-y-1.5">
+          <span className="text-xs text-stone-500">
+            {t("settings.yarnMatching")}
+          </span>
+          <label className="flex items-center gap-2 text-sm text-stone-600">
+            <input
+              type="checkbox"
+              checked={matchDmc}
+              onChange={(e) => setMatchDmc(e.target.checked)}
+              disabled={!hasImage}
+              className="accent-amber-600"
+            />
+            {t("settings.matchDmc")}
+          </label>
+          <label className="flex items-center gap-2 text-sm text-stone-600">
+            <input
+              type="checkbox"
+              checked={matchTuftTheWorld}
+              onChange={(e) => setMatchTuftTheWorld(e.target.checked)}
+              disabled={!hasImage}
+              className="accent-amber-600"
+            />
+            {t("settings.matchTuftTheWorld")}
+          </label>
+          <p className="text-[11px] leading-snug text-stone-400">
+            {t("settings.yarnMatchingNote")}
+          </p>
+        </div>
         <div className="space-y-1.5">
           <span className="text-xs text-stone-500">
             {t("settings.colorMapLabels")}

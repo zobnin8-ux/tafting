@@ -2,6 +2,7 @@
 
 import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { YarnMatchRow } from "@/components/YarnMatchRow";
 
 export function PalettePanel() {
   const palette = useTuftingStore((s) => s.palette);
@@ -125,6 +126,13 @@ export function PalettePanel() {
                   {color.yarnWeightG}g — {color.skeins}{" "}
                   {skeinLabel(color.skeins)}
                 </div>
+                {color.yarnMatches && color.yarnMatches.length > 0 && (
+                  <div className="mt-2 space-y-1 border-t border-stone-100 pt-2">
+                    {color.yarnMatches.map((match) => (
+                      <YarnMatchRow key={match.catalogId} match={match} />
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
