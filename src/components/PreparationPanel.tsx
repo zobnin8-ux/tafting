@@ -4,7 +4,11 @@ import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { SimplificationLevel } from "@/types";
 
-export function PreparationPanel() {
+interface PreparationPanelProps {
+  embedded?: boolean;
+}
+
+export function PreparationPanel({ embedded = false }: PreparationPanelProps) {
   const artworkPrep = useTuftingStore((s) => s.artworkPrepSettings);
   const patchArtworkPrepSettings = useTuftingStore(
     (s) => s.patchArtworkPrepSettings
@@ -38,14 +42,18 @@ export function PreparationPanel() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
+        <h3
+          className={`text-sm font-semibold text-stone-700 uppercase tracking-wide ${
+            embedded ? "hidden lg:block" : ""
+          }`}
+        >
           {t("prep.title")}
         </h3>
         {prepUndoStack.length > 0 && (
           <button
             onClick={undoPrepSettings}
             disabled={!hasImage}
-            className="shrink-0 rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900 disabled:opacity-40"
+            className={`shrink-0 rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-50 hover:text-stone-900 disabled:opacity-40 ${embedded ? "ml-auto" : ""}`}
           >
             {t("prep.undo")}
           </button>

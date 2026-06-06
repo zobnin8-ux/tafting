@@ -3,8 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
-
-const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+import { isAcceptedImageFile } from "@/lib/imageUpload";
 
 export function ImageUploader() {
   const uploadImage = useTuftingStore((s) => s.uploadImage);
@@ -15,7 +14,7 @@ export function ImageUploader() {
 
   const handleFile = useCallback(
     (file: File) => {
-      if (!ACCEPTED_TYPES.includes(file.type)) {
+      if (!isAcceptedImageFile(file)) {
         alert(t("upload.invalidFormat"));
         return;
       }

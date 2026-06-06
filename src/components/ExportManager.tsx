@@ -7,7 +7,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { buildColorMapDataUrls } from "@/lib/colorMapExport";
 import { exportPng, exportPdf } from "@/services/ExportService";
 
-export function ExportManager() {
+interface ExportManagerProps {
+  embedded?: boolean;
+}
+
+export function ExportManager({ embedded = false }: ExportManagerProps) {
   const images = useTuftingStore((s) => s.images);
   const labels = useTuftingStore((s) => s.labels);
   const palette = useTuftingStore((s) => s.palette);
@@ -97,7 +101,11 @@ export function ExportManager() {
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
+      <h3
+        className={`text-sm font-semibold text-stone-700 uppercase tracking-wide ${
+          embedded ? "hidden lg:block" : ""
+        }`}
+      >
         {t("export.title")}
       </h3>
 

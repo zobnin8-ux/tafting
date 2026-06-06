@@ -13,9 +13,16 @@ export const translations = {
     },
     upload: {
       title: "Загрузка изображения",
+      button: "Загрузить",
       dragDrop: "Перетащите файл или нажмите для выбора",
       formats: "JPG, PNG, WEBP",
       invalidFormat: "Загрузите изображение в формате JPG, PNG или WEBP.",
+    },
+    nav: {
+      label: "Навигация",
+      preview: "Превью",
+      settings: "Настройки",
+      palette: "Палитра",
     },
     prep: {
       title: "Подготовка арта",
@@ -179,9 +186,16 @@ export const translations = {
     },
     upload: {
       title: "Upload Image",
+      button: "Upload",
       dragDrop: "Drag & drop or click to upload",
       formats: "JPG, PNG, WEBP",
       invalidFormat: "Please upload a JPG, PNG, or WEBP image.",
+    },
+    nav: {
+      label: "Navigation",
+      preview: "Preview",
+      settings: "Settings",
+      palette: "Palette",
     },
     prep: {
       title: "Artwork Preparation",

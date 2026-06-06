@@ -10,7 +10,74 @@ import {
 } from "@/constants";
 import type { GridSize, PileHeight, TuftingType, Unit } from "@/types";
 
-export function SettingsPanel() {
+interface RugDimensionsSectionProps {
+  embedded?: boolean;
+}
+
+export function RugDimensionsSection({ embedded = false }: RugDimensionsSectionProps) {
+  const rugSettings = useTuftingStore((s) => s.rugSettings);
+  const setRugSettings = useTuftingStore((s) => s.setRugSettings);
+  const { t } = useTranslation();
+
+  return (
+    <section className="space-y-3">
+      <h3
+        className={`text-sm font-semibold text-stone-700 uppercase tracking-wide ${
+          embedded ? "hidden lg:block" : ""
+        }`}
+      >
+        {t("settings.rugDimensions")}
+      </h3>
+      <div className="grid grid-cols-2 gap-2">
+        <label className="block">
+          <span className="text-xs text-stone-500">{t("settings.width")}</span>
+          <input
+            type="number"
+            min={1}
+            value={rugSettings.width}
+            onChange={(e) =>
+              setRugSettings({ width: Number(e.target.value) })
+            }
+            className="mt-0.5 w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="text-xs text-stone-500">{t("settings.height")}</span>
+          <input
+            type="number"
+            min={1}
+            value={rugSettings.height}
+            onChange={(e) =>
+              setRugSettings({ height: Number(e.target.value) })
+            }
+            className="mt-0.5 w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+      </div>
+      <div className="flex gap-2">
+        {(["inches", "centimeters"] as Unit[]).map((unit) => (
+          <button
+            key={unit}
+            onClick={() => setRugSettings({ unit })}
+            className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+              rugSettings.unit === unit
+                ? "bg-amber-600 text-white"
+                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+            }`}
+          >
+            {t(unit === "inches" ? "settings.inches" : "settings.centimeters")}
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+interface SettingsPanelProps {
+  showDimensions?: boolean;
+}
+
+export function SettingsPanel({ showDimensions = true }: SettingsPanelProps) {
   const rugSettings = useTuftingStore((s) => s.rugSettings);
   const setRugSettings = useTuftingStore((s) => s.setRugSettings);
   const colorCount = useTuftingStore((s) => s.colorCount);
@@ -44,52 +111,7 @@ export function SettingsPanel() {
 
   return (
     <div className="space-y-5">
-      <section className="space-y-3">
-        <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
-          {t("settings.rugDimensions")}
-        </h3>
-        <div className="grid grid-cols-2 gap-2">
-          <label className="block">
-            <span className="text-xs text-stone-500">{t("settings.width")}</span>
-            <input
-              type="number"
-              min={1}
-              value={rugSettings.width}
-              onChange={(e) =>
-                setRugSettings({ width: Number(e.target.value) })
-              }
-              className="mt-0.5 w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
-            />
-          </label>
-          <label className="block">
-            <span className="text-xs text-stone-500">{t("settings.height")}</span>
-            <input
-              type="number"
-              min={1}
-              value={rugSettings.height}
-              onChange={(e) =>
-                setRugSettings({ height: Number(e.target.value) })
-              }
-              className="mt-0.5 w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
-            />
-          </label>
-        </div>
-        <div className="flex gap-2">
-          {(["inches", "centimeters"] as Unit[]).map((unit) => (
-            <button
-              key={unit}
-              onClick={() => setRugSettings({ unit })}
-              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
-                rugSettings.unit === unit
-                  ? "bg-amber-600 text-white"
-                  : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-              }`}
-            >
-              {t(unit === "inches" ? "settings.inches" : "settings.centimeters")}
-            </button>
-          ))}
-        </div>
-      </section>
+      {showDimensions && <RugDimensionsSection />}
 
       <section className="space-y-3">
         <h3 className="text-sm font-semibold text-stone-700 uppercase tracking-wide">
