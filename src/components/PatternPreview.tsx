@@ -52,25 +52,26 @@ export function PatternPreview() {
       </div>
 
       {canRender && (
-        <div className="mb-3 flex shrink-0 flex-wrap gap-1 rounded-lg bg-stone-100 p-1">
-          {MODES.map((mode) => (
-            <button
-              key={mode.value}
-              onClick={() => setPreviewMode(mode.value)}
-              className={`min-w-0 flex-1 rounded-md px-1.5 py-1.5 text-[11px] font-medium transition-colors sm:px-2 sm:text-xs ${
-                previewMode === mode.value
-                  ? "bg-white text-stone-900 shadow-sm"
-                  : "text-stone-500 hover:text-stone-700"
-              }`}
-            >
-              {t(mode.labelKey)}
-            </button>
-          ))}
+        <div className="mb-3 -mx-1 shrink-0 overflow-x-auto px-1">
+          <div className="flex w-max min-w-full gap-1 rounded-lg bg-stone-100 p-1">
+            {MODES.map((mode) => (
+              <button
+                key={mode.value}
+                onClick={() => setPreviewMode(mode.value)}
+                className={`shrink-0 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors sm:px-3 ${
+                  previewMode === mode.value
+                    ? "bg-white text-stone-900 shadow-sm"
+                    : "text-stone-500 hover:text-stone-700"
+                }`}
+              >
+                {t(mode.labelKey)}
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Fixed preview viewport — image always stays here */}
-      <div className="relative h-[min(58vh,560px)] min-h-[320px] shrink-0 overflow-hidden rounded-lg border border-stone-200 bg-stone-50">
+      <div className="relative h-[min(52vw,420px)] min-h-[240px] shrink-0 overflow-hidden rounded-lg border border-stone-200 bg-stone-50 sm:min-h-[320px] sm:h-[min(58vh,560px)]">
         {isProcessing && (
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80">
             <div className="h-8 w-8 animate-spin rounded-full border-2 border-amber-600 border-t-transparent" />
@@ -87,7 +88,7 @@ export function PatternPreview() {
         )}
 
         {canRender && previewMode === "cleaned" && (
-          <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
+          <div className="absolute inset-0 grid grid-cols-1 gap-2 overflow-y-auto p-2 sm:grid-cols-2 sm:overflow-hidden">
             <div className="flex min-h-0 flex-col overflow-hidden">
               <span className="mb-1 shrink-0 text-center text-xs text-stone-400">
                 {t("preview.original")}
@@ -108,7 +109,7 @@ export function PatternPreview() {
         )}
 
         {canRender && previewMode === "reduced" && (
-          <div className="absolute inset-0 grid grid-cols-2 gap-2 p-2">
+          <div className="absolute inset-0 grid grid-cols-1 gap-2 overflow-y-auto p-2 sm:grid-cols-2 sm:overflow-hidden">
             <div className="flex min-h-0 flex-col overflow-hidden">
               <span className="mb-1 shrink-0 text-center text-xs text-stone-400">
                 {t("preview.original")}

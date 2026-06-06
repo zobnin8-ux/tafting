@@ -17,26 +17,26 @@ export function TuftingApp() {
 
   return (
     <div className="flex min-h-screen flex-col bg-stone-100">
-      <header className="border-b border-stone-200 bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-[1600px] items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-stone-900">
+      <header className="border-b border-stone-200 bg-white px-4 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 sm:py-4">
+        <div className="mx-auto flex max-w-[1600px] items-start justify-between gap-3 sm:items-center sm:gap-4">
+          <div className="min-w-0">
+            <h1 className="text-lg font-bold text-stone-900 sm:text-xl">
               {t("app.title")}
             </h1>
-            <p className="text-sm text-stone-500">{t("app.subtitle")}</p>
+            <p className="text-xs text-stone-500 sm:text-sm">{t("app.subtitle")}</p>
           </div>
           <LanguageSwitcher />
         </div>
       </header>
 
       {error && (
-        <div className="bg-red-50 px-6 py-2 text-center text-sm text-red-700">
+        <div className="bg-red-50 px-4 py-2 text-center text-sm text-red-700 sm:px-6">
           {t(`errors.${error}`)}
         </div>
       )}
 
-      <main className="mx-auto flex w-full max-w-[1600px] flex-1 items-start gap-4 p-4 lg:p-6">
-        <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 xl:w-80">
+      <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col items-stretch gap-4 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:flex-row lg:items-start lg:p-6">
+        <aside className="order-2 w-full shrink-0 space-y-5 rounded-xl border border-stone-200 bg-white p-4 lg:order-none lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 lg:overflow-y-auto xl:w-80">
           <ImageUploader />
           <hr className="border-stone-200" />
           <PreparationPanel />
@@ -46,11 +46,11 @@ export function TuftingApp() {
           <ExportManager />
         </aside>
 
-        <section className="flex min-w-0 flex-1 flex-col self-start rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4">
+        <section className="order-1 flex min-w-0 flex-1 flex-col self-stretch rounded-xl border border-stone-200 bg-white p-4 lg:order-none lg:sticky lg:top-4 lg:self-start">
           <PatternPreview />
         </section>
 
-        <aside className="w-full shrink-0 space-y-5 overflow-y-auto rounded-xl border border-stone-200 bg-white p-4 lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 xl:w-80">
+        <aside className="order-3 w-full shrink-0 space-y-5 rounded-xl border border-stone-200 bg-white p-4 lg:order-none lg:sticky lg:top-4 lg:max-h-[calc(100vh-7.5rem)] lg:w-72 lg:overflow-y-auto xl:w-80">
           <PalettePanel />
           <hr className="border-stone-200" />
           <MaterialEstimator />

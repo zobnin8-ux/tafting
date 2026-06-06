@@ -5,7 +5,7 @@ import { useTuftingStore } from "@/store/useTuftingStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Locale } from "@/i18n";
 
-const LOCALES: Locale[] = ["ru", "en"];
+const LOCALES: Locale[] = ["en", "ru"];
 
 export function LanguageSwitcher() {
   const locale = useLocaleStore((s) => s.locale);
